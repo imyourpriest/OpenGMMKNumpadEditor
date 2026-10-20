@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>OpenGMMK Numpad Editor</title>
+  <desc>A dark number pad with a teal key, volume slider, dial, and RGB accent.</desc>
+  <defs>
+    <linearGradient id="tile" x1="72" y1="32" x2="424" y2="486" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#293d57"/>
+      <stop offset="1" stop-color="#111c2e"/>
+    </linearGradient>
+    <linearGradient id="case" x1="137" y1="65" x2="370" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#394e65"/>
+      <stop offset="1" stop-color="#223348"/>
+    </linearGradient>
+    <linearGradient id="key" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#b9d0dd"/>
+      <stop offset="1" stop-color="#8eaabf"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="147" y1="444" x2="365" y2="444" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#39e0ba"/>
+      <stop offset="0.48" stop-color="#56c9ff"/>
+      <stop offset="1" stop-color="#ad91ff"/>
+    </linearGradient>
+    <linearGradient id="active" x1="148" y1="149" x2="193" y2="198" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#70f5d8"/>
+      <stop offset="1" stop-color="#35c6b6"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#tile)"/>
+  <rect x="17" y="17" width="478" height="478" rx="107" fill="none" stroke="#69839b" stroke-opacity="0.23" stroke-width="2"/>
+  <rect x="109" y="72" width="294" height="386" rx="36" fill="#081320" fill-opacity="0.6"/>
+  <rect x="111" y="61" width="290" height="387" rx="34" fill="url(#case)" stroke="#587086" stroke-width="2"/>
+  <path d="M145 75h222" fill="none" stroke="#adc4d5" stroke-opacity="0.17" stroke-width="2" stroke-linecap="round"/>
+  <rect x="147" y="103" width="132" height="12" rx="6" fill="#111e2d"/>
+  <rect x="148" y="105" width="54" height="8" rx="4" fill="#36bfae"/>
+  <rect x="188" y="94" width="20" height="30" rx="6" fill="#dbf5f3"/>
+  <path d="M194 101v16" stroke="#5d9f9d" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="340" cy="109" r="24" fill="#111e2d"/>
+  <circle cx="340" cy="107" r="19" fill="#adc6d5"/>
+  <circle cx="340" cy="107" r="14" fill="#819fb6"/>
+  <path d="M340 94v7" stroke="#e6f5fb" stroke-width="3" stroke-linecap="round"/>
+  <g stroke="#192b3e" stroke-width="3">
+    <rect x="147" y="149" width="47" height="47" rx="9" fill="url(#active)"/>
+    <g fill="url(#key)">
+      <rect x="204" y="149" width="47" height="47" rx="9"/>
+      <rect x="261" y="149" width="47" height="47" rx="9"/>
+      <rect x="318" y="149" width="47" height="47" rx="9"/>
+      <rect x="147" y="206" width="47" height="47" rx="9"/>
+      <rect x="204" y="206" width="47" height="47" rx="9"/>
+      <rect x="261" y="206" width="47" height="47" rx="9"/>
+      <rect x="318" y="206" width="47" height="104" rx="9"/>
+      <rect x="147" y="263" width="47" height="47" rx="9"/>
+      <rect x="204" y="263" width="47" height="47" rx="9"/>
+      <rect x="261" y="263" width="47" height="47" rx="9"/>
+      <rect x="147" y="320" width="47" height="47" rx="9"/>
+      <rect x="204" y="320" width="47" height="47" rx="9"/>
+      <rect x="261" y="320" width="47" height="47" rx="9"/>
+      <rect x="318" y="320" width="47" height="104" rx="9"/>
+      <rect x="147" y="377" width="104" height="47" rx="9"/>
+      <rect x="261" y="377" width="47" height="47" rx="9"/>
+    </g>
+  </g>
+  <g fill="none" stroke="#3c5b73" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m233 161-10 21m56-18 11 15m0-15-11 15m51-7h23"/>
+    <path d="M332 258h19m-9.5-9.5v19"/>
+    <path d="M348 364v13h-13m6-6-6 6 6 6"/>
+  </g>
+  <g fill="none" stroke="#1b7d77" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M162 170v-6h6m11 0h6v6m0 8v6h-6m-11 0h-6v-6"/>
+  </g>
+  <g fill="#47667f">
+    <circle cx="170.5" cy="229.5" r="3"/>
+    <circle cx="227.5" cy="229.5" r="3"/>
+    <circle cx="284.5" cy="229.5" r="3"/>
+    <circle cx="170.5" cy="286.5" r="3"/>
+    <circle cx="227.5" cy="286.5" r="3"/>
+    <circle cx="284.5" cy="286.5" r="3"/>
+    <circle cx="170.5" cy="343.5" r="3"/>
+    <circle cx="227.5" cy="343.5" r="3"/>
+    <circle cx="284.5" cy="343.5" r="3"/>
+    <circle cx="284.5" cy="400.5" r="3"/>
+    <rect x="188" y="398" width="22" height="5" rx="2.5"/>
+  </g>
+  <path d="M149 437h214" fill="none" stroke="url(#accent)" stroke-width="5" stroke-linecap="round"/>
+</svg>
