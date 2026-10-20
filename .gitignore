@@ -1,0 +1,22 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local installation bookkeeping and desktop metadata
+.managed-files.json
+.DS_Store
+*~
+
+# Local test output and package archives
+test-results*/
+.coverage
+htmlcov/
+*.zip
+
+# Personal working profiles; committed examples belong in examples/
+profiles/
+
+# Raster icons are reproducible exports of the committed SVG
+assets/icons/

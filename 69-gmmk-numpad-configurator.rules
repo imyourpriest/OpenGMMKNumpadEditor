@@ -1,0 +1,3 @@
+# Stock Glorious GMMK Numpad configuration interface only.
+# Grant the active local desktop user access; no world-writable permissions.
+ACTION=="add|change", SUBSYSTEM=="hidraw", KERNEL=="hidraw*", ENV{ID_BUS}=="usb", ENV{ID_VENDOR_ID}=="320f", ENV{ID_MODEL_ID}=="5088", ENV{ID_USB_INTERFACE_NUM}=="02", ENV{ID_REVISION}=="0088", TAG+="uaccess"

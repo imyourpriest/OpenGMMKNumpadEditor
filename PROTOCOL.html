@@ -1,0 +1,427 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stock GMMK Numpad USB protocol evidence</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1>Stock GMMK Numpad USB protocol evidence</h1>
+<p>This is an interoperability record for the protocol subset used by OpenGMMK Numpad Editor. The packet format was independently reviewed against resources packaged in the official manufacturer's application. The initial user reports that the editor works well. Specific key/LED combinations, power-cycle persistence, and another-computer behavior still need recorded physical acceptance results; source review and successful USB transfers alone do not establish those results.</p>
+<h2>Supported device and transport</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>USB vendor/product</td>
+<td><code>320f:5088</code></td>
+</tr>
+<tr>
+<td>USB device revision</td>
+<td><code>0088</code></td>
+</tr>
+<tr>
+<td>USB interface</td>
+<td><code>02</code></td>
+</tr>
+<tr>
+<td>HID report type</td>
+<td>Feature</td>
+</tr>
+<tr>
+<td>Report ID</td>
+<td><code>07</code></td>
+</tr>
+<tr>
+<td>Report count</td>
+<td>263 eight-bit payload elements</td>
+</tr>
+<tr>
+<td>Complete transfer size</td>
+<td>264 bytes, including report ID</td>
+</tr>
+<tr>
+<td>Report descriptor SHA-256</td>
+<td><code>fda4cd2490bbe43df640a5f6f21ba23a2c586ada787d40d777d637d675015aed</code></td>
+</tr>
+</tbody>
+</table>
+<p>Every packet below is zero-filled to 264 bytes. Byte <code>0</code> is <code>07</code>; byte <code>1</code> is the command. Profile and layer fields use values <code>1</code> through <code>3</code>. There is no checksum in the evidenced frames. Do not apply protocols for the original SONiX GMMK or for QMK/VIA firmware to this device.</p>
+<p>CORE's device discovery tries usage page/usage <code>FF02:0001</code>, then <code>FF01:0001</code>, for each supported device identity (<code>Device.js:319–357</code> and the Numpad record in <code>SupportDevice.DB</code>). The native transport uses HIDAPI feature reports (<code>GmmkNumpadSeries.js:2060–2093</code>, <code>hiddevice.cc:565–655</code>). The vendor wrapper removes the first report-ID byte from returned data; this application's raw transport retains it. All response offsets in this document include the report ID.</p>
+<h2>Evidence provenance</h2>
+<p>The <a href="https://www.gloriousgaming.com/pages/legacy-software">official legacy software page</a> links <a href="https://downloads.gloriousgamingservices.com/download/GloriousCore.zip">GloriousCore.zip</a>. On 2026-10-14 it contained <code>GloriousCore_Setup_1.1.36.exe</code>. The archive and application resources were extracted statically; the installer and application were not executed.</p>
+<table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GloriousCore_Setup_1.1.36.exe</code></td>
+<td><code>7f68626ebf7d61659629808d48936d5f404921a4728624f146e99acbc07e4f9d</code></td>
+</tr>
+<tr>
+<td><code>app/resources/app.asar</code></td>
+<td><code>f7bfe092a9d59380cfab27ad4428ccd67e9e6dbeb402eaf5501e93f796404524</code></td>
+</tr>
+<tr>
+<td><code>GmmkNumpadSeries.js</code></td>
+<td><code>8820d9b28a279dcb5d5db5e0e6399d50aa9b584164c4b9d04729f75a17c1dffe</code></td>
+</tr>
+<tr>
+<td><code>GMMKLocation.js</code></td>
+<td><code>724a5c4d0832af3570479cf39bb4728c8fdbb0a0d9281a55b7de17d7321a1417</code></td>
+</tr>
+<tr>
+<td><code>SupportData.js</code></td>
+<td><code>0b72a0b6d93e13746489a0fab7e6a272599f8f4ae50af69a2c7870595cc42f92</code></td>
+</tr>
+<tr>
+<td><code>hiddevice.cc</code></td>
+<td><code>cb553f4f1cad4e52134ae65fccb30c92c68fb47ce40f679c968573fe12cff594</code></td>
+</tr>
+<tr>
+<td><code>LayoutDB.db</code></td>
+<td><code>50944c3a8375d31b87d0a0a8505f4a33f6fe3b01f08253329a9c2497a322a631</code></td>
+</tr>
+<tr>
+<td><code>M_Light_Numpad.ts</code></td>
+<td><code>3e1ad6880b214d580958ba8fbf3caf82a726bf9eb83a7b187c7022797686f197</code></td>
+</tr>
+</tbody>
+</table>
+<p>Paths inside the ASAR are:</p>
+<ul>
+<li><code>src/electron-process/renderer-interop/protocol/device/keyboard/GmmkNumpadSeries.js</code></li>
+<li><code>src/electron-process/renderer-interop/protocol/device/Device.js</code></li>
+<li><code>src/electron-process/renderer-interop/others/GMMKLocation.js</code></li>
+<li><code>src/electron-process/renderer-interop/others/SupportData.js</code></li>
+<li><code>src/electron-process/renderer-interop/database/SupportDevice.DB</code></li>
+<li><code>src/electron-process/renderer-interop/database/LayoutDB.db</code></li>
+<li><code>src/electron-process/hiddevice/src/hiddevice.cc</code></li>
+<li><code>src/renderer-process/components/KeyboardNumpadComponent/Built_ineffect.class.ts</code></li>
+<li><code>src/renderer-process/components/KeyboardNumpadComponent/M_Light_Numpad.ts</code></li>
+<li><code>src/renderer-process/components/KeyboardNumpadComponent/keyboard-numpad.component.ts</code></li>
+<li><code>src/renderer-process/components/KeyboardNumpadComponent/keyboard-numpad.component.html</code></li>
+</ul>
+<p>The hashes and internal archive paths identify the evidence used during review. No extracted manufacturer source, installer, application archive, firmware, or database is included in this project. The application has no runtime dependency on CORE.</p>
+<h2>Status query: <code>8A</code></h2>
+<p><code>GmmkNumpadSeries.js:2325–2378</code> builds <code>07 8A</code>, sends the 264-byte feature report, waits 30 ms, reads feature report <code>07</code> with length 264, then waits another 30 ms.</p>
+<table>
+<thead>
+<tr>
+<th>Raw response offset</th>
+<th>Meaning evidenced by CORE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Report ID</td>
+</tr>
+<tr>
+<td><code>1</code></td>
+<td>Status command position</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td>Battery percentage, checked against 0–100</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Charging value; the source does not define its enumeration</td>
+</tr>
+<tr>
+<td><code>4–5</code></td>
+<td>Firmware word, little-endian</td>
+</tr>
+</tbody>
+</table>
+<p>CORE interprets the firmware word's hexadecimal digits as a padded version string. This application can retain the raw word without assuming every firmware version is valid BCD. No keymap, RGB, profile, or current-setting readback command was found in the Numpad implementation.</p>
+<h2>Whole-layer key assignments: <code>03</code></h2>
+<p><code>GmmkNumpadSeries.js:1291–1390,1486–1607</code> and <code>GMMKLocation.js:304–339</code> establish the key table.</p>
+<p>The header is <code>07 03 &lt;slot&gt; &lt;layer&gt; 00 00 00 00</code>. Bytes <code>8–27</code> are 20 key types; bytes <code>28–47</code> are their 20 action values. The remaining bytes are zero. Type <code>01</code> is a normal keyboard usage. Supported generic modifier combinations use type <code>E0 + mask</code>, with Ctrl=<code>1</code>, Shift=<code>2</code>, Alt=<code>4</code>, Super=<code>8</code>; the action value remains the keyboard usage.</p>
+<p>The matrix indices are:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Key</th>
+<th>Index</th>
+<th>Key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Num Lock</td>
+<td>1</td>
+<td>Divide</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Multiply</td>
+<td>3</td>
+<td>Subtract</td>
+</tr>
+<tr>
+<td>4</td>
+<td>7</td>
+<td>5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>6</td>
+<td>9</td>
+<td>7</td>
+<td>Add</td>
+</tr>
+<tr>
+<td>8</td>
+<td>4</td>
+<td>9</td>
+<td>5</td>
+</tr>
+<tr>
+<td>10</td>
+<td>6</td>
+<td>11</td>
+<td>Encoder press</td>
+</tr>
+<tr>
+<td>12</td>
+<td>1</td>
+<td>13</td>
+<td>2</td>
+</tr>
+<tr>
+<td>14</td>
+<td>3</td>
+<td>15</td>
+<td>Enter</td>
+</tr>
+<tr>
+<td>16</td>
+<td>0</td>
+<td>17–18</td>
+<td>Empty</td>
+</tr>
+<tr>
+<td>19</td>
+<td>Decimal</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The builder starts with the manufacturer's complete table and replaces the 17 editable key entries. Index <code>11</code> remains type <code>03</code>, value <code>10</code>: the manufacturer's calculator action. This overwrites a custom encoder press assignment. Rotary turning and the slider are not entries in this editable key table. Command <code>09</code>, which separately carries knob sound-control/glow state, is not sent by this application.</p>
+<h2>Global RGB: <code>02</code>, then settings <code>07</code></h2>
+<p>This application's lighting path is always <strong><code>02</code> → <code>07</code> → <code>06</code> → <code>01</code></strong>. The global effect and base color go through <code>02</code>; <code>06</code> sends the complete custom-color overlay, including erased entries. The official path uses the same order and sends <code>06</code> when its selected layout is present (<code>GmmkNumpadSeries.js:1079–1119,1722–1751</code>). Sending <code>02</code> alone is not an evidenced complete operation; this source does not prove whether it immediately takes effect or persists by itself.</p>
+<p>For command <code>02</code>, see lines <code>1753–1800</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>2–3</code></td>
+<td>Slot, layer</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td>Effect ID</td>
+</tr>
+<tr>
+<td><code>8</code></td>
+<td><code>trunc(20 - speed_percent × 19 / 100)</code></td>
+</tr>
+<tr>
+<td><code>9</code></td>
+<td><code>00</code> in the newer firmware path</td>
+</tr>
+<tr>
+<td><code>10</code></td>
+<td>Multicolor flag when supported; this app uses <code>00</code></td>
+</tr>
+<tr>
+<td><code>12</code></td>
+<td><code>01</code> for Rainbow, otherwise <code>00</code></td>
+</tr>
+<tr>
+<td><code>15–17</code></td>
+<td>Red, green, blue</td>
+</tr>
+</tbody>
+</table>
+<p>The application exposes these raw effect IDs: off=<code>0</code>, Wave #1=<code>2</code>, breathing=<code>6</code>, static/Normally On=<code>7</code>, reactive/Ripple Graff=<code>8</code>, rainbow=<code>13</code>. The class's constructor at lines <code>24–45</code> defines the translation from UI effect values. <code>Built_ineffect.class.ts:8–22,58–73,100–127,161–170</code> confirms the relevant UI options; Rainbow and Off disable multicolor.</p>
+<p>For command <code>07</code>, see lines <code>1802–1860</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Value or explicit choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>2–4</code></td>
+<td>Slot, layer, same effect ID</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td>Win Lock=<code>00</code></td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td>Per-key enable=<code>01</code></td>
+</tr>
+<tr>
+<td><code>7</code></td>
+<td>Num Lock LED indicator, <code>00</code> or <code>01</code></td>
+</tr>
+<tr>
+<td><code>8</code></td>
+<td>USB brightness, <code>trunc(percent × 20 / 100)</code></td>
+</tr>
+<tr>
+<td><code>10</code></td>
+<td>Debounce/latency byte=<code>08</code>; the configurable assignment is commented out</td>
+</tr>
+<tr>
+<td><code>11</code></td>
+<td>Sensitivity, <code>trunc(value / 2)</code> for a UI value 0–100</td>
+</tr>
+<tr>
+<td><code>12</code></td>
+<td>Battery indicator, <code>00</code> or <code>01</code></td>
+</tr>
+<tr>
+<td><code>13</code></td>
+<td>Bluetooth brightness, <code>trunc(percent × 20 / 100)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Off forces brightness bytes <code>8</code> and <code>13</code> to decimal <code>10</code>, matching CORE. Unlisted bytes are zero. Each of these two reports is followed by 100 ms.</p>
+<p>The settings packet is not a brightness-only update. Its other fields must be visible, explicit choices because no known readback can preserve their current values. <code>SupportDevice.DB</code>, first record, ships all nine Numpad layers with sensitivity <code>2</code>, Num Lock indicator false, battery indicator true, Win Lock false, and USB brightness 100. Its stored Bluetooth brightness is <code>0</code>, but its absent <code>brightnessFlag</code> makes CORE use USB brightness instead (<code>GmmkNumpadSeries.js:1835–1842</code>). These are CORE defaults, not verified firmware factory or current values.</p>
+<h2>Per-key RGB: <code>06</code></h2>
+<p><code>GmmkNumpadSeries.js:1889–2058</code> builds:</p>
+<p><code>07 06 &lt;slot&gt; &lt;layer&gt; 2A 00 &lt;brightness_0_to_20&gt; 00</code></p>
+<p>Bytes <code>8–217</code> hold 42 five-byte records. A populated record at matrix position <code>j</code> is <code>[visibility, j, red, green, blue]</code>: <code>00</code> clears the custom-color entry, <code>FF</code> enables a static color, and <code>FE</code> enables breathing. Bytes <code>218–263</code> are zero. The source writes one page and waits 100 ms.</p>
+<p>The official Numpad layout in <code>LayoutDB.db</code>, line 1, <code>AllData[8]</code>, starts with all 33 UI entries at <code>clearStatus=false</code>, zero RGBA, and breathing false. <code>M_Light_Numpad.ts:130–159</code> erases entries by restoring those values; <code>keyboard-numpad.component.ts:1053–1062</code> explicitly calls that state “PERKEY Erase.” <code>LayoutToData</code> maps it to visibility <code>00</code>. The official preview renders the global effect below a per-key overlay (<code>keyboard-numpad.component.html:131–148</code>); cleared RGBA entries are transparent. This supports interpreting per-key colors as overrides of the global effect. Physical firmware composition still needs acceptance testing.</p>
+<p>This application's builder therefore sends <code>[00, j, 00, 00, 00]</code> for each of the 31 known LED groups unless a key has an explicit color override. Only those overridden keys receive <code>[FF, j, R, G, B]</code>. All 14 side-LED overlays are cleared so the global effect controls them. Removing the last override still sends a complete cleared layout. Off ignores saved override colors on the wire and clears every valid overlay entry. It does not delete those colors from the local draft. Empty firmware positions remain five zero bytes.</p>
+<p>The application does not expose per-key breathing or independent side-LED colors. Its on-screen preview shows the global base color and static key overrides without animating global effects. A save replaces the complete custom-color overlay; missing entries do not preserve unknown onboard colors.</p>
+<p><code>GMMKLocation.js:314–336</code> defines this matrix:</p>
+<table>
+<thead>
+<tr>
+<th>Row</th>
+<th>Left side</th>
+<th>Key</th>
+<th>Key</th>
+<th>Key</th>
+<th>Key</th>
+<th>Right side</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0: Side 1</td>
+<td>1: Num Lock</td>
+<td>2: Divide</td>
+<td>3: Multiply</td>
+<td>4: Subtract</td>
+<td>5: Side 8</td>
+</tr>
+<tr>
+<td>1</td>
+<td>6: Side 2</td>
+<td>7: 7</td>
+<td>8: 8</td>
+<td>9: 9</td>
+<td>10: Add</td>
+<td>11: Side 9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>12: Side 3</td>
+<td>13: empty</td>
+<td>14: empty</td>
+<td>15: empty</td>
+<td>16: empty</td>
+<td>17: Side 10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>18: Side 4</td>
+<td>19: 4</td>
+<td>20: 5</td>
+<td>21: 6</td>
+<td>22: duplicate Add</td>
+<td>23: Side 11</td>
+</tr>
+<tr>
+<td>4</td>
+<td>24: Side 5</td>
+<td>25: 1</td>
+<td>26: 2</td>
+<td>27: 3</td>
+<td>28: Enter</td>
+<td>29: Side 12</td>
+</tr>
+<tr>
+<td>5</td>
+<td>30: Side 6</td>
+<td>31: empty</td>
+<td>32: empty</td>
+<td>33: empty</td>
+<td>34: empty</td>
+<td>35: Side 13</td>
+</tr>
+<tr>
+<td>6</td>
+<td>36: Side 7</td>
+<td>37: empty</td>
+<td>38: 0</td>
+<td>39: Decimal</td>
+<td>40: empty</td>
+<td>41: Side 14</td>
+</tr>
+</tbody>
+</table>
+<p>CORE uses the first matching LED index. Add therefore uses position <code>10</code>; position <code>22</code> remains empty, as do the other holes. There are 31 unique physical LED groups in this 42-position matrix. Knob press (<code>Mute</code> in the source) and Slider have no matching LED index. Do not encode negative indices for them.</p>
+<h2>Selection, transaction boundaries, and persistence</h2>
+<p>Command <code>01</code> is <code>07 01 &lt;slot&gt; &lt;layer&gt;</code> followed by zeros and a 50 ms delay (<code>GmmkNumpadSeries.js:850–889</code>). The official UI calls it after changing a key layer or lighting.</p>
+<p><code>StartHIDWrite</code> and <code>EndHIDWrite</code> at lines <code>2115–2138</code> send start/end packets only for Bluetooth. Both are no-ops over USB. No separate USB save/commit command was found. The similarly named <code>setProfileToDevice</code> in <code>Device.js:57–63</code> only updates the application's local database.</p>
+<p>Accordingly, a completed USB transfer is not proof of physical application or durable storage. The initial user has reported good operation, but detailed persistence results have not been recorded. Acceptance requires checking the actual keys/LEDs, disconnecting and reconnecting USB, and checking the same slot/layer again. Use on another computer should be checked independently, with host remapping software disabled for any keys under test.</p>
+<h2>Golden frame examples</h2>
+<p>These are reproducible encodings, not commands to run blindly. All offsets include the report ID. Each expression below produces exactly 264 bytes; <code>zeros(N)</code> means N zero bytes.</p>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Exact bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status request</td>
+<td><code>07 8A</code> + <code>zeros(262)</code></td>
+</tr>
+<tr>
+<td>Select slot 1, layer 1</td>
+<td><code>07 01 01 01</code> + <code>zeros(260)</code></td>
+</tr>
+<tr>
+<td>Static red, slot 1/layer 1, speed 100, multicolor off</td>
+<td><code>07 02 01 01 07 00 00 00 01 00 00 00 00 00 00 FF 00 00</code> + <code>zeros(246)</code></td>
+</tr>
+<tr>
+<td>Settings for that example: USB/Bluetooth brightness 100, sensitivity 2, Num Lock indicator off, battery indicator on</td>
+<td><code>07 07 01 01 07 00 01 00 14 00 08 01 01 14</code> + <code>zeros(250)</code></td>
+</tr>
+</tbody>
+</table>
+<p>The global example also requires a complete overlay <code>06</code> followed by selection <code>01</code>. For a cleared overlay at slot 1/layer 1 and brightness 100, the header is <code>07 06 01 01 2A 00 14 00</code>; each known LED record is <code>[00, j, 00, 00, 00]</code>, all unused records are zero, and the final 46 bytes are zero. It must not be described as preserving a user's prior settings.</p></body></html>

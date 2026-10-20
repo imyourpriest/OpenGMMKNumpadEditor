@@ -1,0 +1,93 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OpenGMMK Numpad Editor</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1>OpenGMMK Numpad Editor</h1>
+<p><img src="assets/io.github.opengmmk.NumpadEditor.svg" alt="OpenGMMK Numpad Editor icon" width="112" align="right"></p>
+<p>A native Linux app for editing <strong>Glorious GMMK Numpad keybindings, onboard profiles, and RGB while keeping the stock firmware</strong>. No Windows application or replacement firmware is required.</p>
+<p>This is an independent community project, unaffiliated with Glorious.</p>
+<p><img alt="OpenGMMK Numpad Editor on Ubuntu" src="preview.png" /></p>
+<h2>Features</h2>
+<ul>
+<li>Edit all 17 numpad keys, including Print Screen and Ctrl, Shift, Alt, or Super combinations.</li>
+<li>Save to any of three onboard profile slots and three layers per slot, or activate a slot/layer.</li>
+<li>Choose Static, Breathing, Rainbow, Wave #1, Ripple Graff, or Off, with color, brightness, and speed controls.</li>
+<li>Add static colors to individual keys over the global lighting effect.</li>
+<li>Keep up to 32 named local profiles in a portable JSON file; duplicate, rename, open, and save them.</li>
+<li>Read battery and firmware information over USB.</li>
+<li>Launch from the desktop application menu with its own name and icon.</li>
+</ul>
+<p><strong>Support:</strong> stock USB device <code>320f:5088</code>, revision <code>0088</code>, configuration interface <code>02</code>, with the exact HID descriptor documented in <a href="PROTOCOL.html">PROTOCOL.md</a>. Other models and revisions are deliberately rejected. Configuration over Bluetooth is not supported; the stock firmware is retained for ordinary Bluetooth operation.</p>
+<p>The application has been reported to work well in daily use by its initial user. The automated checks and protocol review are documented in <a href="VALIDATION.html">VALIDATION.md</a>. Unplug/replug persistence, use on another computer, and every combination of hardware settings have not yet been independently verified.</p>
+<h2>Install</h2>
+<p>Requires Linux, Python 3.10 or newer, and GTK 3.24. On Ubuntu, install the desktop dependencies if they are missing:</p>
+<pre><code class="language-sh">sudo apt install python3 python3-gi gir1.2-gtk-3.0
+</code></pre>
+<p>Download or clone the project, open its folder in a terminal, then install for your desktop user:</p>
+<pre><code class="language-sh">sh install.sh
+</code></pre>
+<p>Launch <strong>OpenGMMK Numpad Editor</strong> from Ubuntu's application menu. To run directly from the project folder:</p>
+<pre><code class="language-sh">sh run.sh
+</code></pre>
+<p>No PyPI dependencies are needed. The editor has been checked on Ubuntu 26.04 with GNOME; other distributions and desktops need their own testing.</p>
+<h3>One-time USB access</h3>
+<p>Connect the numpad with its USB cable. If access is unavailable, click <strong>Set up USB access…</strong> in the app, or run:</p>
+<pre><code class="language-sh">sh install-device-access.sh
+</code></pre>
+<p>The setup uses Ubuntu's normal password prompt in a terminal to install a rule limited to this device's configuration interface. The editor does not receive the password. Reconnect the USB cable if needed, then click <strong>Refresh device</strong>. Run the app as your ordinary desktop user.</p>
+<h2>Use</h2>
+<ol>
+<li>Create a local profile or open an existing profile JSON file.</li>
+<li>Select a key to change its assignment or color; choose the global lighting effect and settings.</li>
+<li>Use <strong>Save profile file…</strong> to keep a portable copy of your intended configuration.</li>
+<li>Choose an onboard profile slot and layer. Use <strong>Save keybindings to numpad…</strong> or <strong>Save lighting…</strong>, and review the settings before confirming.</li>
+<li>Check the physical keys and lighting. To test onboard persistence, disconnect and reconnect USB, activate the same slot/layer, and check it again. Testing on another computer without remapping software provides a further check.</li>
+</ol>
+<p>The <a href="examples/Print-Screen.json">Print Screen example</a> is a standard layout with the top-left key changed to Print Screen. Opening it only changes the local draft.</p>
+<h3>Local files and onboard settings</h3>
+<p><strong>A local profile is a draft, not a download of the numpad's current configuration.</strong> Saving a JSON file does not write to the numpad. The known status command reads battery and firmware information only; it cannot read or back up onboard keybindings, RGB, or other settings. Keep a local profile file for every configuration you want to restore.</p>
+<p>The default profile folder is <code>~/Documents/GMMK Numpad Profiles</code>. Files use format version 2. Version 1 drafts open with explicit default settings added and are saved as version 2.</p>
+<h3>What each save replaces</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Save keybindings</td>
+<td>Replaces all 17 key assignments in the selected layer. It also restores the encoder's press action to the manufacturer's calculator assignment.</td>
+</tr>
+<tr>
+<td>Save lighting</td>
+<td>Replaces the selected layer's global effect and complete custom-color overlay, plus the explicit indicator, sensitivity, and Bluetooth brightness settings shown in the dialog.</td>
+</tr>
+<tr>
+<td>Activate</td>
+<td>Selects an onboard profile slot and layer without uploading the local draft.</td>
+</tr>
+</tbody>
+</table>
+<p>A lighting save clears custom colors for keys without an override and for the side LEDs, allowing the global effect to control them. Removing the last override also clears the onboard overlay. <strong>Off</strong> clears global lighting and the custom-color overlay; saved override colors remain in the local draft. The separate knob/key glow behavior is left untouched. The on-screen preview shows colors without animating effects.</p>
+<p>The manufacturer's lighting settings frame additionally sets Win Lock to <code>0</code>, per-key enable to <code>1</code>, and the debounce/latency byte to <code>8</code>. These unknown onboard values cannot be read and preserved by the app. Initial indicator and sensitivity choices come from CORE's shipped application defaults: sensitivity <code>2</code>, Num Lock indicator off, and battery indicator on. They are not a measurement of the connected device or verified firmware factory defaults. See <a href="PROTOCOL.html">PROTOCOL.md</a> for the exact settings.</p>
+<h3>Slider, knob, and host shortcuts</h3>
+<p>The editor does not replace firmware or configure rotary turn mode, slider actions, macros, or the separate knob sound-control/glow command. An existing Ubuntu slider volume helper remains separate; each Ubuntu computer needs that helper if you want the same host volume integration. A lighting save can change its explicit sensitivity setting, so check slider and knob behavior afterward.</p>
+<p>Host remapping software can hide whether an onboard key change succeeded. If testing a key also mapped by Input Remapper or another utility, temporarily disable only that numpad mapping. Desktop shortcuts still determine what the computer does with a key such as Print Screen.</p>
+<h2>Remove</h2>
+<p>Keep profile backups outside the application folder, then run:</p>
+<pre><code class="language-sh">sh uninstall.sh
+</code></pre>
+<p>The installer uses <code>~/.local/share/gmmk-numpad-configurator</code> and the launcher <code>~/.local/share/applications/io.github.opengmmk.NumpadEditor.desktop</code>. Removal deletes only unchanged managed files and preserves added or modified files. Removing the app does not restore earlier onboard settings.</p>
+<p>USB access is installed separately. To remove its rule:</p>
+<pre><code class="language-sh">sudo rm -- /etc/udev/rules.d/69-gmmk-numpad-configurator.rules
+sudo udevadm control --reload-rules
+</code></pre>
+<p>Reconnect the numpad to refresh access. Keep any separately installed slider service and its access rule if you still use them.</p>
+<h2>Development</h2>
+<p>Run the hardware-free test suite from the project folder:</p>
+<pre><code class="language-sh">python3 -B -m unittest discover -s tests -v
+</code></pre>
+<p>With GTK and a graphical session available, check UI construction with:</p>
+<pre><code class="language-sh">sh run.sh --smoke-test
+</code></pre>
+<p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for reporting hardware results and proposing changes, <a href="PROTOCOL.html">PROTOCOL.md</a> for source evidence and packet details, and <a href="VALIDATION.html">VALIDATION.md</a> for what has and has not been verified. No proprietary CORE code, installer, firmware, or database is included.</p>
+<h2>License</h2>
+<p>Original project code and assets are available under the <a href="LICENSE">MIT License</a>. Glorious and GMMK are trademarks of their respective owner; their use identifies supported hardware and does not imply endorsement.</p></body></html>

@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Validation record</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1>Validation record</h1>
+<p>OpenGMMK Numpad Editor has been reported to work well by its initial user. The protocol and hardware-free checks below provide additional evidence. Detailed physical acceptance for all supported settings, unplug/replug persistence, and another-computer operation remain unverified.</p>
+<h2>Reviewed environment and implementation</h2>
+<p>The initial development environment was Ubuntu 26.04 with GNOME. Checks recorded on 2026-10-14 established:</p>
+<ul>
+<li>The GTK editor starts and renders, with scrolling for smaller windows.</li>
+<li>USB discovery identifies the stock <code>320f:5088</code>, revision <code>0088</code>, and its interfaces <code>00</code>, <code>01</code>, and <code>02</code>.</li>
+<li>Configuration interface <code>02</code> declares feature report <code>07</code>, 264 bytes including its report ID. Its descriptor matches the manufacturer's transport and the app's identity guard.</li>
+<li>Independent static review matched key tables, modifier encoding, profile/layer selection, RGB commands, and status offsets against official CORE 1.1.36 resources. The Windows installer and application were not executed.</li>
+<li>The existing stock-firmware Ubuntu slider integration was retained separately.</li>
+</ul>
+<p>The original development access check preceded setup of the configuration interface. It is historical evidence, not a statement about current user permissions. The initial user subsequently reported on 2026-10-15 that the application worked well and repeated that feedback on 2026-10-20. That feedback is useful acceptance evidence, but it does not identify every setting tested or establish a power-cycle result.</p>
+<h2>Automated checks</h2>
+<p>Run from the project folder:</p>
+<pre><code class="language-sh">python3 -B -m unittest discover -s tests -v
+</code></pre>
+<p>The suite uses simulated devices and temporary installation folders. It covers:</p>
+<ul>
+<li>Profile round trips and migration, malformed imports, and atomic file saving.</li>
+<li>Exact protocol examples, key and LED indices, modifier encoding, reserved bytes, and whole-layer/overlay replacement.</li>
+<li>Device identity changes, incomplete transfers, concurrent access, and operation sequencing.</li>
+<li>Installation/removal behavior, including preservation of added or modified files.</li>
+</ul>
+<p>These tests do not send HID reports to real hardware. Continuous integration runs this suite on Linux. A separate GTK construction check requires the desktop dependencies and a graphical session:</p>
+<pre><code class="language-sh">sh run.sh --smoke-test
+</code></pre>
+<p>Passing software checks does not establish that firmware accepted a setting or retained it in onboard storage. Current test counts and results should come from the test run or CI, rather than a fixed count in this document.</p>
+<h2>Physical acceptance checklist</h2>
+<p>Record the USB identity/revision, firmware information when available, desktop environment, target profile/layer, and exact settings used for each test.</p>
+<ul>
+<li>[ ] Read battery and firmware status over USB.</li>
+<li>[ ] Save a complete intended key layer; check Print Screen, ordinary keys, and modifier combinations.</li>
+<li>[ ] Check knob turning, slider volume, unmute behavior, and the desktop volume popup if the separate slider helper is installed.</li>
+<li>[ ] Save and check each global RGB effect, color, speed, and brightness setting.</li>
+<li>[ ] Add a static per-key color, remove it, and remove the last override; confirm the expected global effect returns.</li>
+<li>[ ] Save Off and confirm global lighting and custom-color overlays clear. The separate knob/key glow setting is outside this operation.</li>
+<li>[ ] Activate each intended profile/layer and confirm the expected settings.</li>
+<li>[ ] Disconnect/reconnect USB and check the same slot/layer again.</li>
+<li>[ ] Connect to another computer without CORE, the editor, or a conflicting host remapper running; check the saved assignments and lighting.</li>
+<li>[ ] Check ordinary stock Bluetooth use separately; this editor only configures over USB.</li>
+</ul>
+<p>Temporarily disable only overlapping host-side numpad mappings during an onboard mapping test. Existing onboard keybindings and lighting cannot be read back or backed up using the known status command. Keep intended layouts in local profile files before testing changes.</p>
+<p>For reproducible hardware reports, use the information in <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>. Do not infer onboard persistence from a local JSON save or an accepted USB transfer.</p></body></html>
