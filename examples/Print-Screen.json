@@ -1,0 +1,324 @@
+{
+  "schema_version": 2,
+  "document_kind": "local-draft",
+  "target": {
+    "vendor_id": "320f",
+    "product_id": "5088",
+    "usb_revision": "0088"
+  },
+  "selected_profile_id": "profile-1",
+  "profiles": [
+    {
+      "id": "profile-1",
+      "name": "Print Screen numpad",
+      "bindings": {
+        "num_lock": {
+          "usage_page": 7,
+          "usage_id": 70,
+          "modifiers": []
+        },
+        "divide": {
+          "usage_page": 7,
+          "usage_id": 84,
+          "modifiers": []
+        },
+        "multiply": {
+          "usage_page": 7,
+          "usage_id": 85,
+          "modifiers": []
+        },
+        "subtract": {
+          "usage_page": 7,
+          "usage_id": 86,
+          "modifiers": []
+        },
+        "kp_7": {
+          "usage_page": 7,
+          "usage_id": 95,
+          "modifiers": []
+        },
+        "kp_8": {
+          "usage_page": 7,
+          "usage_id": 96,
+          "modifiers": []
+        },
+        "kp_9": {
+          "usage_page": 7,
+          "usage_id": 97,
+          "modifiers": []
+        },
+        "add": {
+          "usage_page": 7,
+          "usage_id": 87,
+          "modifiers": []
+        },
+        "kp_4": {
+          "usage_page": 7,
+          "usage_id": 92,
+          "modifiers": []
+        },
+        "kp_5": {
+          "usage_page": 7,
+          "usage_id": 93,
+          "modifiers": []
+        },
+        "kp_6": {
+          "usage_page": 7,
+          "usage_id": 94,
+          "modifiers": []
+        },
+        "kp_1": {
+          "usage_page": 7,
+          "usage_id": 89,
+          "modifiers": []
+        },
+        "kp_2": {
+          "usage_page": 7,
+          "usage_id": 90,
+          "modifiers": []
+        },
+        "kp_3": {
+          "usage_page": 7,
+          "usage_id": 91,
+          "modifiers": []
+        },
+        "enter": {
+          "usage_page": 7,
+          "usage_id": 88,
+          "modifiers": []
+        },
+        "kp_0": {
+          "usage_page": 7,
+          "usage_id": 98,
+          "modifiers": []
+        },
+        "decimal": {
+          "usage_page": 7,
+          "usage_id": 99,
+          "modifiers": []
+        }
+      },
+      "rgb": {
+        "effect": "static",
+        "color": "#33aaff",
+        "brightness": 70,
+        "speed": 50,
+        "per_key": {},
+        "device_settings": {
+          "num_lock_indicator": false,
+          "battery_indicator": true,
+          "sensitivity": 2,
+          "wireless_brightness": 70
+        }
+      }
+    },
+    {
+      "id": "profile-2",
+      "name": "Profile 2",
+      "bindings": {
+        "num_lock": {
+          "usage_page": 7,
+          "usage_id": 83,
+          "modifiers": []
+        },
+        "divide": {
+          "usage_page": 7,
+          "usage_id": 84,
+          "modifiers": []
+        },
+        "multiply": {
+          "usage_page": 7,
+          "usage_id": 85,
+          "modifiers": []
+        },
+        "subtract": {
+          "usage_page": 7,
+          "usage_id": 86,
+          "modifiers": []
+        },
+        "kp_7": {
+          "usage_page": 7,
+          "usage_id": 95,
+          "modifiers": []
+        },
+        "kp_8": {
+          "usage_page": 7,
+          "usage_id": 96,
+          "modifiers": []
+        },
+        "kp_9": {
+          "usage_page": 7,
+          "usage_id": 97,
+          "modifiers": []
+        },
+        "add": {
+          "usage_page": 7,
+          "usage_id": 87,
+          "modifiers": []
+        },
+        "kp_4": {
+          "usage_page": 7,
+          "usage_id": 92,
+          "modifiers": []
+        },
+        "kp_5": {
+          "usage_page": 7,
+          "usage_id": 93,
+          "modifiers": []
+        },
+        "kp_6": {
+          "usage_page": 7,
+          "usage_id": 94,
+          "modifiers": []
+        },
+        "kp_1": {
+          "usage_page": 7,
+          "usage_id": 89,
+          "modifiers": []
+        },
+        "kp_2": {
+          "usage_page": 7,
+          "usage_id": 90,
+          "modifiers": []
+        },
+        "kp_3": {
+          "usage_page": 7,
+          "usage_id": 91,
+          "modifiers": []
+        },
+        "enter": {
+          "usage_page": 7,
+          "usage_id": 88,
+          "modifiers": []
+        },
+        "kp_0": {
+          "usage_page": 7,
+          "usage_id": 98,
+          "modifiers": []
+        },
+        "decimal": {
+          "usage_page": 7,
+          "usage_id": 99,
+          "modifiers": []
+        }
+      },
+      "rgb": {
+        "effect": "static",
+        "color": "#33aaff",
+        "brightness": 70,
+        "speed": 50,
+        "per_key": {},
+        "device_settings": {
+          "num_lock_indicator": false,
+          "battery_indicator": true,
+          "sensitivity": 2,
+          "wireless_brightness": 70
+        }
+      }
+    },
+    {
+      "id": "profile-3",
+      "name": "Profile 3",
+      "bindings": {
+        "num_lock": {
+          "usage_page": 7,
+          "usage_id": 83,
+          "modifiers": []
+        },
+        "divide": {
+          "usage_page": 7,
+          "usage_id": 84,
+          "modifiers": []
+        },
+        "multiply": {
+          "usage_page": 7,
+          "usage_id": 85,
+          "modifiers": []
+        },
+        "subtract": {
+          "usage_page": 7,
+          "usage_id": 86,
+          "modifiers": []
+        },
+        "kp_7": {
+          "usage_page": 7,
+          "usage_id": 95,
+          "modifiers": []
+        },
+        "kp_8": {
+          "usage_page": 7,
+          "usage_id": 96,
+          "modifiers": []
+        },
+        "kp_9": {
+          "usage_page": 7,
+          "usage_id": 97,
+          "modifiers": []
+        },
+        "add": {
+          "usage_page": 7,
+          "usage_id": 87,
+          "modifiers": []
+        },
+        "kp_4": {
+          "usage_page": 7,
+          "usage_id": 92,
+          "modifiers": []
+        },
+        "kp_5": {
+          "usage_page": 7,
+          "usage_id": 93,
+          "modifiers": []
+        },
+        "kp_6": {
+          "usage_page": 7,
+          "usage_id": 94,
+          "modifiers": []
+        },
+        "kp_1": {
+          "usage_page": 7,
+          "usage_id": 89,
+          "modifiers": []
+        },
+        "kp_2": {
+          "usage_page": 7,
+          "usage_id": 90,
+          "modifiers": []
+        },
+        "kp_3": {
+          "usage_page": 7,
+          "usage_id": 91,
+          "modifiers": []
+        },
+        "enter": {
+          "usage_page": 7,
+          "usage_id": 88,
+          "modifiers": []
+        },
+        "kp_0": {
+          "usage_page": 7,
+          "usage_id": 98,
+          "modifiers": []
+        },
+        "decimal": {
+          "usage_page": 7,
+          "usage_id": 99,
+          "modifiers": []
+        }
+      },
+      "rgb": {
+        "effect": "static",
+        "color": "#33aaff",
+        "brightness": 70,
+        "speed": 50,
+        "per_key": {},
+        "device_settings": {
+          "num_lock_indicator": false,
+          "battery_indicator": true,
+          "sensitivity": 2,
+          "wireless_brightness": 70
+        }
+      }
+    }
+  ]
+}
