@@ -15,8 +15,10 @@ def connected_device():
     return device
 
 
-def read_status():
-    with StockTransport(connected_device()) as transport:
+def read_status(device=None):
+    # A monitor can bind the query to the exact identity it just inspected.
+    # StockTransport revalidates that identity before every feature exchange.
+    with StockTransport(device if device is not None else connected_device()) as transport:
         transport.send_feature(build_status_request())
         time.sleep(0.03)
         result = parse_status(transport.get_feature())

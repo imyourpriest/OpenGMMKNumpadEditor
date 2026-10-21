@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Validation record</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1>Validation record</h1>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Validation record</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1 id="validation-record">Validation record</h1>
 <p>OpenGMMK Numpad Editor has been reported to work well by its initial user. The protocol and hardware-free checks below provide additional evidence. Detailed physical acceptance for all supported settings, unplug/replug persistence, and another-computer operation remain unverified.</p>
-<h2>Reviewed environment and implementation</h2>
+<h2 id="reviewed-environment-and-implementation">Reviewed environment and implementation</h2>
 <p>The initial development environment was Ubuntu 26.04 with GNOME. Checks recorded on 2026-10-14 established:</p>
 <ul>
 <li>The GTK editor starts and renders, with scrolling for smaller windows.</li>
@@ -10,7 +10,7 @@
 <li>The existing stock-firmware Ubuntu slider integration was retained separately.</li>
 </ul>
 <p>The original development access check preceded setup of the configuration interface. It is historical evidence, not a statement about current user permissions. The initial user subsequently reported on 2026-10-15 that the application worked well and repeated that feedback on 2026-10-20. That feedback is useful acceptance evidence, but it does not identify every setting tested or establish a power-cycle result.</p>
-<h2>Automated checks</h2>
+<h2 id="automated-checks">Automated checks</h2>
 <p>Run from the project folder:</p>
 <pre><code class="language-sh">python3 -B -m unittest discover -s tests -v
 </code></pre>
@@ -20,15 +20,32 @@
 <li>Exact protocol examples, key and LED indices, modifier encoding, reserved bytes, and whole-layer/overlay replacement.</li>
 <li>Device identity changes, incomplete transfers, concurrent access, and operation sequencing.</li>
 <li>Installation/removal behavior, including preservation of added or modified files.</li>
+<li>Monitor rate limits, cache expiry, connection changes, and exact Bluetooth/UPower battery association.</li>
+<li>Indicator labels, D-Bus menu behavior, and missing or stale battery readings.</li>
 </ul>
 <p>These tests do not send HID reports to real hardware. Continuous integration runs this suite on Linux. A separate GTK construction check requires the desktop dependencies and a graphical session:</p>
 <pre><code class="language-sh">sh run.sh --smoke-test
 </code></pre>
-<p>Passing software checks does not establish that firmware accepted a setting or retained it in onboard storage. Current test counts and results should come from the test run or CI, rather than a fixed count in this document.</p>
-<h2>Physical acceptance checklist</h2>
+<p>The 0.2.0 validation run on 2026-10-20 passed all <strong>182 tests</strong>. This is a dated result; use a fresh test run or CI for the current count. Passing software checks does not establish that firmware accepted a setting or retained it in onboard storage.</p>
+<h2 id="connection-and-battery-monitoring-2026-10-20">Connection and battery monitoring: 2026-10-20</h2>
+<p>One live USB status query returned battery <strong>100%</strong> and firmware word/version <strong><code>0088</code></strong> from the supported stock numpad. This confirms the status path returned a plausible live reading on this device; it does not establish battery accuracy, charging semantics, or continuous monitoring behavior.</p>
+<p>A separate read-only operating-system check found the already paired Bluetooth numpad with Modalias <code>usb:v093Ap2860d0001</code>, disconnected while USB was in use. It advertised Battery Service <code>180F</code> and HID Service <code>1812</code>. No <code>org.bluez.Battery1</code> instance or UPower battery for the numpad was available in that state. Other UPower devices were not used as substitutes.</p>
+<p>An isolated instance of the integrated application, using a validation application ID, registered with the actual GNOME <code>org.kde.StatusNotifierWatcher</code>. An independent D-Bus query showed its <code>org.kde.StatusNotifierItem-&lt;process-id&gt;-1</code> entry in <code>RegisteredStatusNotifierItems</code>. Its exported indicator label was <strong>USB 100%</strong>, and its monitor returned battery 100% and firmware <code>0088</code>.</p>
+<p>A programmatic window-lifecycle check marked a temporary draft as unsaved, hid the editor window, and reopened it. The same editor instance and unsaved state remained. After clearing the temporary test state, the application quit cleanly. These checks establish integration and retained draft state; a physical check of the unsaved-quit dialog remains pending.</p>
+<p>After the 0.2.0 desktop installation was launched, an independent D-Bus query again read <strong>USB 100%</strong> from the running application's <code>XAyatanaLabel</code>. The user then confirmed that the actual top-bar icon, USB 100% display, and <strong>Open editor</strong>, <strong>Refresh status</strong>, and <strong>Quit</strong> menu actions worked. Bluetooth battery delivery still requires a physical connected-device test.</p>
+<p>The monitoring implementation is intended to keep connection discovery to approximately five-second intervals, USB status queries to 30-second intervals, and failed-refresh battery cache lifetime to 120 seconds. It uses the existing configuration-interface lock, does not infer charging from the undocumented USB field, and reads Bluetooth information only through OS APIs. Consult the current automated test output for the validated failure and cache cases.</p>
+<h2 id="physical-acceptance-checklist">Physical acceptance checklist</h2>
 <p>Record the USB identity/revision, firmware information when available, desktop environment, target profile/layer, and exact settings used for each test.</p>
 <ul>
-<li>[ ] Read battery and firmware status over USB.</li>
+<li>[x] Read battery and firmware status over USB once: 100%, firmware <code>0088</code>, on 2026-10-20.</li>
+<li>[x] Register the integrated indicator with GNOME's actual host and independently read its USB 100% label over D-Bus.</li>
+<li>[x] Programmatically hide/reopen the same editor with an unsaved draft retained, then quit cleanly after clearing test edits.</li>
+<li>[x] User confirmed the visible top-bar icon, USB 100% display, and Open editor / Refresh status / Quit actions on 2026-10-20.</li>
+<li>[ ] Close the editor window; reopen the same unsaved draft from the indicator; confirm Quit handles unsaved edits.</li>
+<li>[ ] Disconnect/reconnect USB; confirm the indicator follows connection changes and marks/expires unavailable readings correctly.</li>
+<li>[ ] Confirm a configuration write does not interleave with automatic status polling.</li>
+<li>[ ] Connect the numpad over Bluetooth; confirm the correct device and an OS-provided battery percentage, or a clear unavailable state.</li>
+<li>[ ] Check behavior without a StatusNotifier host; closing the editor must not leave an inaccessible running app.</li>
 <li>[ ] Save a complete intended key layer; check Print Screen, ordinary keys, and modifier combinations.</li>
 <li>[ ] Check knob turning, slider volume, unmute behavior, and the desktop volume popup if the separate slider helper is installed.</li>
 <li>[ ] Save and check each global RGB effect, color, speed, and brightness setting.</li>

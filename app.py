@@ -19,7 +19,7 @@ from gi.repository import GLib
 
 APP_ID = "io.github.opengmmk.NumpadEditor"
 APP_NAME = "OpenGMMK Numpad Editor"
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.2.0"
 PROJECT_URL = "https://github.com/imyourpriest/OpenGMMKNumpadEditor"
 # Establish the process identity before importing GTK, which initializes GDK.
 # GNOME matches Wayland windows by the application ID and X11 windows by WM_CLASS.
@@ -67,6 +67,11 @@ class Editor(Gtk.ApplicationWindow):
         about.get_accessible().set_name(f"About {APP_NAME}")
         about.connect("clicked", self.show_about)
         titlebar.pack_end(about)
+        quit_button = Gtk.Button.new_from_icon_name("application-exit-symbolic", Gtk.IconSize.BUTTON)
+        quit_button.set_tooltip_text("Quit editor and status monitor")
+        quit_button.get_accessible().set_name("Quit editor and status monitor")
+        quit_button.connect("clicked", lambda *_: application.request_quit())
+        titlebar.pack_end(quit_button)
         self.set_titlebar(titlebar)
         self.set_default_size(940, 820)
         self.set_border_width(22)
@@ -88,6 +93,10 @@ class Editor(Gtk.ApplicationWindow):
         root.pack_start(heading, False, False, 0)
         self.device_label = Gtk.Label(xalign=0)
         root.pack_start(self.device_label, False, False, 0)
+        self.monitor_label = Gtk.Label(label="Checking connection and battery…", xalign=0)
+        root.pack_start(self.monitor_label, False, False, 0)
+        self.tray_label = Gtk.Label(xalign=0)
+        root.pack_start(self.tray_label, False, False, 0)
 
         notice = Gtk.InfoBar()
         notice.set_message_type(Gtk.MessageType.INFO)
@@ -405,15 +414,15 @@ class Editor(Gtk.ApplicationWindow):
             return False
         def work():
             try:
-                result, error = function(), None
+                with self.get_application().device_lock:
+                    result, error = function(), None
             except Exception as exc:
                 result, error = None, exc
             GLib.idle_add(finish, result, error)
         threading.Thread(target=work, daemon=True).start()
 
     def read_device_status(self, *_):
-        import backend
-        self.run_device_task(backend.read_status, lambda result: "Device status: " + json.dumps(result, ensure_ascii=False))
+        self.get_application().refresh_monitor(force=True)
 
     def activate_slot(self, *_):
         import backend
@@ -535,7 +544,25 @@ class Editor(Gtk.ApplicationWindow):
         if self.busy:
             self.error("Wait for the current device operation to finish before closing the editor.")
             return True
+        if self.get_application().tray_registered:
+            self.hide()
+            return True
         return not self.discard_ok()
+
+    def update_monitor(self, snapshot):
+        from status_notifier import describe_snapshot
+        labels = describe_snapshot(snapshot)
+        text = f"{labels['connection']} · {labels['battery']}"
+        if snapshot.transport == "usb":
+            text += " · USB power"
+        if snapshot.firmware:
+            text += f" · Firmware {snapshot.firmware}"
+        self.monitor_label.set_text(text)
+        self.monitor_label.set_tooltip_text(snapshot.error)
+
+    def update_tray_status(self, registered):
+        self.tray_label.set_text("Close the window to keep monitoring in the top bar. Use Quit to exit."
+                                 if registered else "Top-bar indicator unavailable · Closing the window exits the editor.")
 
     def open_file(self, *_):
         if not self.discard_ok():
@@ -616,20 +643,125 @@ class Application(Gtk.Application):
         flags = Gio.ApplicationFlags.NON_UNIQUE if smoke_test else Gio.ApplicationFlags.DEFAULT_FLAGS
         super().__init__(application_id=APP_ID, flags=flags)
         self.smoke_test = smoke_test
+        self.editor = None
+        self.indicator = None
+        self.monitor = None
+        self.monitor_busy = False
+        self.monitor_timer = None
+        self.device_lock = threading.Lock()
+        self.tray_registered = False
+        self.tray_hold = False
+        self.stopping = False
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
         # Also find the bundled icon when the portable folder is run directly.
         Gtk.IconTheme.get_default().append_search_path(str(Path(__file__).resolve().parent / "assets"))
         Gtk.Window.set_default_icon_name(APP_ID)
+        if not self.smoke_test:
+            from monitoring import MonitorCoordinator
+            from status_notifier import StatusNotifier
+            self.monitor = MonitorCoordinator()
+            self.indicator = StatusNotifier(
+                self.open_editor, lambda: self.refresh_monitor(force=True), self.request_quit,
+                icon_name=APP_ID, icon_theme_path=str(Path(__file__).resolve().parent / "assets"),
+                on_registration_changed=self.tray_changed)
+            self.indicator.start()
+            self.monitor_timer = GLib.timeout_add_seconds(5, self.monitor_tick)
+            self.refresh_monitor()
 
     def do_activate(self):
-        window = self.get_active_window()
-        if window is None:
-            window = Editor(self)
-        window.present()
+        self.open_editor()
         if self.smoke_test:
             GLib.timeout_add(250, self.quit)
+
+    def open_editor(self):
+        if self.stopping:
+            return
+        if self.editor is None:
+            self.editor = Editor(self)
+            self.editor.connect("destroy", self.editor_destroyed)
+        self.editor.update_tray_status(self.tray_registered)
+        if self.monitor:
+            self.editor.update_monitor(self.monitor.get_snapshot())
+        self.editor.present()
+
+    def editor_destroyed(self, window):
+        if self.editor is window:
+            self.editor = None
+
+    def tray_changed(self, registered):
+        if self.stopping:
+            return
+        self.tray_registered = registered
+        if registered and not self.tray_hold:
+            self.hold()
+            self.tray_hold = True
+        elif not registered and self.tray_hold:
+            # Restore the editor before releasing the background hold so it
+            # remains reachable if GNOME's indicator extension disappears.
+            self.open_editor()
+            self.release()
+            self.tray_hold = False
+        if self.editor:
+            self.editor.update_tray_status(registered)
+
+    def monitor_tick(self):
+        self.refresh_monitor()
+        return not self.stopping
+
+    def refresh_monitor(self, force=False):
+        if self.stopping or self.monitor is None or self.monitor_busy:
+            return
+        if self.editor and self.editor.busy:
+            return
+        self.monitor_busy = True
+        def finish(snapshot):
+            self.monitor_busy = False
+            if not self.stopping:
+                if self.indicator:
+                    self.indicator.update(snapshot)
+                if self.editor:
+                    self.editor.update_monitor(snapshot)
+                    self.editor.refresh_device()
+            return False
+        def work():
+            # Manual configuration operations wait for a short status read;
+            # automatic reads skip a busy editor instead of competing with it.
+            if not self.device_lock.acquire(blocking=False):
+                GLib.idle_add(finish, self.monitor.get_snapshot())
+                return
+            try:
+                snapshot = self.monitor.poll(force=force)
+            except Exception:
+                from dataclasses import replace
+                snapshot = replace(self.monitor.get_snapshot(), stale=True,
+                                   error="Status refresh failed. Try Refresh status from the top-bar menu.")
+            finally:
+                self.device_lock.release()
+            GLib.idle_add(finish, snapshot)
+        threading.Thread(target=work, daemon=True, name="numpad-monitor").start()
+
+    def request_quit(self):
+        window = self.editor
+        if window and window.busy:
+            self.open_editor()
+            window.error("Wait for the current device operation to finish before quitting.")
+            return
+        if window and window.dirty:
+            self.open_editor()
+            if not window.discard_ok():
+                return
+        self.quit()
+
+    def do_shutdown(self):
+        self.stopping = True
+        if self.monitor_timer:
+            GLib.source_remove(self.monitor_timer)
+            self.monitor_timer = None
+        if self.indicator:
+            self.indicator.stop()
+        Gtk.Application.do_shutdown(self)
 
 
 if __name__ == "__main__":
