@@ -103,34 +103,83 @@ class Invocation:
 
 
 class SnapshotDescriptionTests(unittest.TestCase):
-    def test_live_usb_battery_is_visible_and_charging_is_not_guessed(self):
+    def test_live_usb_uses_compact_icon_and_preserves_exact_menu_reading(self):
         result = tray.describe_snapshot(Snapshot())
-        self.assertEqual(result["label"], "USB 87%")
+        self.assertEqual(result["icon"], "gmmk-numpad-usb-085-symbolic")
+        self.assertEqual(result["label"], "")
+        self.assertEqual(result["overlay"], "")
         self.assertEqual(result["battery"], "Battery: 87%")
         self.assertEqual(result["connection"], "USB connected")
+        self.assertIn("Battery: 87%", result["tooltip"])
 
-    def test_bluetooth_and_zero_percent_are_visible(self):
+    def test_accessible_description_retains_connection_exact_percent_and_freshness(self):
+        cases = ((Snapshot(), "USB connected. Battery: 87%."),
+                 (Snapshot(transport="bluetooth", usb_connected=False, bluetooth_connected=True),
+                  "Bluetooth connected. Battery: 87%."),
+                 (Snapshot(stale=True), "USB connected. Battery: 87% (last reading)."),
+                 (Snapshot(battery_percent=None), "USB connected. Battery unavailable."))
+        for snapshot, status in cases:
+            with self.subTest(transport=snapshot.transport, stale=snapshot.stale,
+                              battery=snapshot.battery_percent):
+                self.assertEqual(tray.describe_snapshot(snapshot)["accessible"],
+                                 "OpenGMMK Numpad Editor: " + status)
+
+    def test_bluetooth_and_zero_percent_use_composite_icon(self):
         result = tray.describe_snapshot(Snapshot(transport="bluetooth", battery_percent=0,
                                                usb_connected=False, bluetooth_connected=True))
-        self.assertEqual(result["label"], "Bluetooth 0%")
-        self.assertEqual(result["overlay"], "bluetooth-active-symbolic")
+        self.assertEqual(result["icon"], "gmmk-numpad-bluetooth-000-symbolic")
+        self.assertEqual(result["label"], "")
+        self.assertEqual(result["overlay"], "")
+        self.assertEqual(result["connection"], "Bluetooth connected")
+        self.assertEqual(result["battery"], "Battery: 0%")
+
+    def test_battery_bar_distinguishes_empty_low_and_full_readings(self):
+        examples = ((0, "000"), (1, "005"), (4, "005"), (5, "005"),
+                    (9, "005"), (10, "010"), (49, "045"), (50, "050"),
+                    (99, "095"), (100, "100"))
+        for transport in ("usb", "bluetooth"):
+            for percent, bucket in examples:
+                with self.subTest(transport=transport, percent=percent):
+                    result = tray.describe_snapshot(Snapshot(transport=transport,
+                                                            battery_percent=percent))
+                    self.assertEqual(result["icon"], f"gmmk-numpad-{transport}-{bucket}-symbolic")
+                    self.assertEqual(result["battery"], f"Battery: {percent}%")
 
     def test_stale_reading_never_looks_current_in_topbar(self):
-        result = tray.describe_snapshot(Snapshot(stale=True))
-        self.assertEqual(result["label"], "USB")
-        self.assertIn("last reading", result["battery"])
+        for transport in ("usb", "bluetooth"):
+            with self.subTest(transport=transport):
+                result = tray.describe_snapshot(Snapshot(transport=transport, stale=True))
+                self.assertEqual(result["icon"], f"gmmk-numpad-{transport}-unavailable-symbolic")
+                self.assertEqual(result["label"], "")
+                self.assertEqual(result["battery"], "Battery: 87% (last reading)")
+                self.assertIn("last reading", result["tooltip"])
 
     def test_unknown_or_invalid_percent_remains_unknown(self):
-        for percent in (None, True, -1, 101, 0.5, "80"):
-            with self.subTest(percent=percent):
-                result = tray.describe_snapshot(Snapshot(battery_percent=percent))
-                self.assertEqual(result["battery"], "Battery unavailable")
-                self.assertEqual(result["label"], "USB")
+        for transport in ("usb", "bluetooth"):
+            for percent in (None, True, False, -1, 101, 0.5, "80"):
+                with self.subTest(transport=transport, percent=percent):
+                    result = tray.describe_snapshot(Snapshot(transport=transport,
+                                                            battery_percent=percent))
+                    self.assertEqual(result["battery"], "Battery unavailable")
+                    self.assertEqual(result["icon"], f"gmmk-numpad-{transport}-unavailable-symbolic")
+                    self.assertEqual(result["label"], "")
 
     def test_disconnected_and_ambiguous_are_explicit(self):
-        self.assertEqual(tray.describe_snapshot(None)["label"], "Offline")
-        self.assertEqual(tray.describe_snapshot({"transport": "ambiguous"})["connection"],
-                         "Multiple numpads detected")
+        self.assertEqual(tray.describe_snapshot(None)["icon"], "gmmk-numpad-offline-symbolic")
+        self.assertEqual(tray.describe_snapshot(None)["connection"], "Not connected")
+        cases = (("disconnected", "offline", "Not connected"),
+                 ("ambiguous", "ambiguous", "Multiple numpads detected"),
+                 ("unrecognized", "unknown", "Connection unknown"))
+        for transport, icon_state, connection in cases:
+            for stale in (False, True):
+                with self.subTest(transport=transport, stale=stale):
+                    result = tray.describe_snapshot(Snapshot(transport=transport,
+                                                            battery_percent=100, stale=stale,
+                                                            usb_connected=False))
+                    self.assertEqual(result["icon"], f"gmmk-numpad-{icon_state}-symbolic")
+                    self.assertEqual(result["connection"], connection)
+                    self.assertEqual(result["label"], "")
+                    self.assertEqual(result["overlay"], "")
 
     def test_both_links_do_not_claim_active_keyboard_input_route(self):
         result = tray.describe_snapshot(Snapshot(bluetooth_connected=True))
@@ -226,16 +275,36 @@ class BusPresentationTests(unittest.TestCase):
         self.assertEqual(properties["ToolTip"], "(sa(iiay)ss)")
         self.assertEqual(properties["Menu"], "o")
         self.assertEqual(properties["XAyatanaLabel"], "s")
+        self.assertEqual(properties["IconAccessibleDesc"], "s")
         menu = ElementTree.fromstring(tray.MENU_XML).find("interface")
         methods = {method.get("name") for method in menu.findall("method")}
         self.assertTrue({"GetLayout", "GetProperty", "GetGroupProperties", "Event", "EventGroup",
                          "AboutToShow", "AboutToShowGroup"} <= methods)
 
-    def test_property_types_include_menu_and_visible_transport_label(self):
+    def test_properties_export_composite_icon_without_topbar_text_or_overlay(self):
         self.indicator.update(Snapshot())
-        self.assertEqual(self.indicator._item_property("XAyatanaLabel").value, "USB 87%")
+        self.assertEqual(self.indicator._item_property("IconName").value, "gmmk-numpad-usb-085-symbolic")
+        self.assertEqual(self.indicator._item_property("ToolTip").value[0], "gmmk-numpad-usb-085-symbolic")
+        self.assertEqual(self.indicator._item_property("XAyatanaLabel").value, "")
+        self.assertEqual(self.indicator._item_property("XAyatanaLabelGuide").value, "")
+        self.assertEqual(self.indicator._item_property("OverlayIconName").value, "")
+        accessible = self.indicator._item_property("IconAccessibleDesc")
+        self.assertEqual(accessible.signature, "s")
+        self.assertEqual(accessible.value, "OpenGMMK Numpad Editor: USB connected. Battery: 87%.")
         self.assertEqual(self.indicator._item_property("Menu").signature, "o")
         self.assertEqual(self.indicator._item_property("ItemIsMenu").value, True)
+
+    def test_default_icon_theme_path_points_to_bundled_tray_icons(self):
+        expected = Path(tray.__file__).resolve().parent / "assets" / "tray"
+        self.assertEqual(Path(self.indicator._item_property("IconThemePath").value), expected)
+
+    def test_explicit_icon_theme_path_is_preserved(self):
+        for theme_path in ("/custom/tray-icons", ""):
+            with self.subTest(theme_path=theme_path):
+                indicator = tray.StatusNotifier(lambda: None, lambda: None, lambda: None,
+                                                icon_theme_path=theme_path, _gi=(FakeGio, self.glib))
+                indicator.Gio, indicator.GLib = FakeGio, self.glib
+                self.assertEqual(indicator._item_property("IconThemePath").value, theme_path)
 
     def test_identical_updates_emit_no_signals(self):
         self.indicator._connection = self.connection
@@ -244,14 +313,71 @@ class BusPresentationTests(unittest.TestCase):
         self.indicator.update(Snapshot())
         self.assertEqual(self.connection.signals, [])
 
-    def test_changed_status_notifies_menu_label_and_tooltip(self):
+    def test_changed_status_notifies_icon_menu_and_tooltip(self):
         self.indicator._connection = self.connection
         self.indicator.update(Snapshot())
         signals = [args[3] for args in self.connection.signals]
         self.assertIn("LayoutUpdated", signals)
         self.assertIn("PropertiesChanged", signals)
-        self.assertIn("XAyatanaNewLabel", signals)
+        self.assertIn("NewIcon", signals)
         self.assertIn("NewToolTip", signals)
+        self.assertNotIn("XAyatanaNewLabel", signals)
+        self.assertNotIn("NewOverlayIcon", signals)
+        changed = next(args[4].value[1] for args in self.connection.signals
+                       if args[3] == "PropertiesChanged")
+        self.assertEqual(changed["IconName"].value, "gmmk-numpad-usb-085-symbolic")
+        self.assertNotIn("XAyatanaLabel", changed)
+        self.assertNotIn("OverlayIconName", changed)
+
+    def test_reading_change_in_same_bar_bucket_updates_exact_text_without_new_icon(self):
+        self.indicator._connection = self.connection
+        self.indicator.update(Snapshot(battery_percent=86))
+        self.connection.signals.clear()
+        self.indicator.update(Snapshot(battery_percent=89))
+        signals = [args[3] for args in self.connection.signals]
+        self.assertIn("NewToolTip", signals)
+        self.assertIn("LayoutUpdated", signals)
+        self.assertNotIn("NewIcon", signals)
+        changed = next(args[4].value[1] for args in self.connection.signals
+                       if args[3] == "PropertiesChanged")
+        self.assertNotIn("IconName", changed)
+        self.assertIn("Battery: 89%", changed["ToolTip"].value[3])
+        self.assertEqual(changed["IconAccessibleDesc"].value,
+                         "OpenGMMK Numpad Editor: USB connected. Battery: 89%.")
+        self.assertEqual(self.indicator.menu.rows[tray.MenuModel.BATTERY]["label"], "Battery: 89%")
+
+    def test_icon_change_refreshes_tooltip_even_when_connection_text_is_unchanged(self):
+        self.indicator._connection = self.connection
+        self.indicator.update(Snapshot(bluetooth_connected=True))
+        before = self.indicator._item_property("ToolTip").value[3]
+        self.connection.signals.clear()
+        self.indicator.update(Snapshot(transport="bluetooth", bluetooth_connected=True))
+        signals = [args[3] for args in self.connection.signals]
+        self.assertIn("NewIcon", signals)
+        self.assertIn("NewToolTip", signals)
+        self.assertNotIn("LayoutUpdated", signals)
+        changed = next(args[4].value[1] for args in self.connection.signals
+                       if args[3] == "PropertiesChanged")
+        self.assertEqual(changed["ToolTip"].value[3], before)
+        self.assertEqual(changed["ToolTip"].value[0], "gmmk-numpad-bluetooth-085-symbolic")
+
+    def test_bucket_transport_and_freshness_changes_each_notify_new_icon(self):
+        self.indicator._connection = self.connection
+        self.indicator.update(Snapshot(battery_percent=89))
+        changes = (Snapshot(battery_percent=90),
+                   Snapshot(transport="bluetooth", battery_percent=90,
+                            usb_connected=False, bluetooth_connected=True),
+                   Snapshot(transport="bluetooth", battery_percent=90, stale=True,
+                            usb_connected=False, bluetooth_connected=True),
+                   Snapshot(transport="disconnected", battery_percent=90, stale=True,
+                            usb_connected=False))
+        for snapshot in changes:
+            with self.subTest(transport=snapshot.transport, stale=snapshot.stale):
+                self.connection.signals.clear()
+                self.indicator.update(snapshot)
+                signals = [args[3] for args in self.connection.signals]
+                self.assertEqual(signals.count("NewIcon"), 1)
+                self.assertNotIn("NewOverlayIcon", signals)
 
     def test_layout_keeps_variant_properties_when_wrapped(self):
         result = self.invoke("GetLayout", (0, -1, []))

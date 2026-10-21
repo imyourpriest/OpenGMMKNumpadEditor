@@ -15,6 +15,7 @@ from datetime import datetime
 from html import escape
 import logging
 import os
+from pathlib import Path
 
 
 APP_ID = "io.github.opengmmk.NumpadEditor"
@@ -36,6 +37,7 @@ ITEM_XML = """<node><interface name="org.kde.StatusNotifierItem">
  <property name="WindowId" type="i" access="read"/>
  <property name="IconThemePath" type="s" access="read"/>
  <property name="IconName" type="s" access="read"/>
+ <property name="IconAccessibleDesc" type="s" access="read"/>
  <property name="IconPixmap" type="a(iiay)" access="read"/>
  <property name="OverlayIconName" type="s" access="read"/>
  <property name="OverlayIconPixmap" type="a(iiay)" access="read"/>
@@ -95,8 +97,6 @@ def describe_snapshot(snapshot):
     connection = connections.get(transport, "Connection unknown")
     if _field(snapshot, "usb_connected", False) and _field(snapshot, "bluetooth_connected", False):
         connection = "USB and Bluetooth connected"
-    short = {"usb": "USB", "bluetooth": "Bluetooth", "disconnected": "Offline",
-             "ambiguous": "Multiple"}.get(transport, "Unknown")
     percent = _field(snapshot, "battery_percent")
     if type(percent) is not int or not 0 <= percent <= 100:
         percent = None
@@ -109,9 +109,17 @@ def describe_snapshot(snapshot):
         battery += " · charging"
     elif charging is False:
         battery += " · not charging"
-    label = short
-    if percent is not None and not stale:
-        label += f" {percent}%"
+    if transport in ("usb", "bluetooth"):
+        # The bar is approximate; retain the exact percentage in the menu.
+        # A nonzero battery always has a visible sliver, and only 100% is full.
+        level = "unavailable"
+        if percent is not None and not stale:
+            amount = max(5, percent // 5 * 5) if percent else 0
+            level = f"{amount:03d}"
+        icon = f"gmmk-numpad-{transport}-{level}-symbolic"
+    else:
+        state = {"disconnected": "offline", "ambiguous": "ambiguous"}.get(transport, "unknown")
+        icon = f"gmmk-numpad-{state}-symbolic"
     stamp = _field(snapshot, "timestamp", _field(snapshot, "updated_at", 0))
     try:
         updated = ("Updated: " + datetime.fromtimestamp(stamp).strftime("%H:%M:%S")) if stamp else "Not checked yet"
@@ -119,8 +127,8 @@ def describe_snapshot(snapshot):
         updated = "Not checked yet"
     error = str(_field(snapshot, "error") or "").replace("\n", " ")[:220]
     return {"connection": connection, "battery": battery, "updated": updated,
-            "error": error, "label": label,
-            "overlay": "bluetooth-active-symbolic" if transport == "bluetooth" else "",
+            "error": error, "label": "", "icon": icon, "overlay": "",
+            "accessible": f"{APP_NAME}: {connection}. {battery}.",
             "tooltip": "\n".join(escape(s) for s in (connection, battery, updated, error) if s)}
 
 
@@ -183,11 +191,11 @@ class StatusNotifier:
     ``registered`` is only true after an active tray host accepted registration.
     """
 
-    def __init__(self, on_open, on_refresh, on_quit, *, icon_name=APP_ID,
-                 icon_theme_path="", on_registration_changed=None, _gi=None):
+    def __init__(self, on_open, on_refresh, on_quit, *, icon_theme_path=None,
+                 on_registration_changed=None, _gi=None):
         self.menu = MenuModel(on_open, on_refresh, on_quit)
-        self.icon_name = icon_name
-        self.icon_theme_path = str(icon_theme_path)
+        self.icon_theme_path = str(Path(__file__).resolve().parent / "assets" / "tray"
+                                   if icon_theme_path is None else icon_theme_path)
         self.on_registration_changed = on_registration_changed
         self._gi = _gi
         self._description = describe_snapshot(None)
@@ -239,19 +247,26 @@ class StatusNotifier:
         if not self._connection:
             return
         changed = {}
-        for key, prop in (("label", "XAyatanaLabel"), ("tooltip", "ToolTip"), ("overlay", "OverlayIconName")):
+        for key, prop in (("icon", "IconName"), ("accessible", "IconAccessibleDesc"),
+                          ("label", "XAyatanaLabel"),
+                          ("tooltip", "ToolTip"), ("overlay", "OverlayIconName")):
             if before[key] != self._description[key]:
                 changed[prop] = self._item_property(prop)
+        if "IconName" in changed:
+            # ToolTip contains its own icon name as well as the plain text.
+            changed["ToolTip"] = self._item_property("ToolTip")
         if changed:
             self._emit(ITEM_PATH, "org.freedesktop.DBus.Properties", "PropertiesChanged",
                        self.GLib.Variant("(sa{sv}as)", (ITEM_INTERFACE, changed, [])))
+        if "IconName" in changed:
+            self._emit(ITEM_PATH, ITEM_INTERFACE, "NewIcon", None)
         if "ToolTip" in changed:
             self._emit(ITEM_PATH, ITEM_INTERFACE, "NewToolTip", None)
         if "OverlayIconName" in changed:
             self._emit(ITEM_PATH, ITEM_INTERFACE, "NewOverlayIcon", None)
         if "XAyatanaLabel" in changed:
             self._emit(ITEM_PATH, ITEM_INTERFACE, "XAyatanaNewLabel",
-                       self.GLib.Variant("(ss)", (self._description["label"], "Bluetooth 100%")))
+                       self.GLib.Variant("(ss)", (self._description["label"], "")))
         if menu_changed:
             self._emit(MENU_PATH, MENU_INTERFACE, "LayoutUpdated",
                        self.GLib.Variant("(ui)", (self.menu.revision, 0)))
@@ -491,14 +506,15 @@ class StatusNotifier:
         values = {
             "Category": ("s", "Hardware"), "Id": ("s", APP_ID), "Title": ("s", APP_NAME),
             "Status": ("s", "Active"), "WindowId": ("i", 0),
-            "IconThemePath": ("s", self.icon_theme_path), "IconName": ("s", self.icon_name),
+            "IconThemePath": ("s", self.icon_theme_path), "IconName": ("s", self._description["icon"]),
+            "IconAccessibleDesc": ("s", self._description["accessible"]),
             "IconPixmap": ("a(iiay)", []), "OverlayIconName": ("s", self._description["overlay"]),
             "OverlayIconPixmap": ("a(iiay)", []), "AttentionIconName": ("s", ""),
             "AttentionIconPixmap": ("a(iiay)", []), "AttentionMovieName": ("s", ""),
-            "ToolTip": ("(sa(iiay)ss)", (self.icon_name, [], APP_NAME, self._description["tooltip"])),
+            "ToolTip": ("(sa(iiay)ss)", (self._description["icon"], [], APP_NAME, self._description["tooltip"])),
             "ItemIsMenu": ("b", True), "Menu": ("o", MENU_PATH),
             "XAyatanaLabel": ("s", self._description["label"]),
-            "XAyatanaLabelGuide": ("s", "Bluetooth 100%"),
+            "XAyatanaLabelGuide": ("s", ""),
         }
         signature, value = values[name]
         return self.GLib.Variant(signature, value)

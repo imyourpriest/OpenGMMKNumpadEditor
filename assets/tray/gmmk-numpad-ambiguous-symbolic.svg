@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#2e3436">
+  <title>OpenGMMK Numpad Editor</title>
+  <desc>Multiple numpads detected; battery unavailable. No charging state is implied.</desc>
+  <path d="M4 1.5h10a2.5 2.5 0 0 1 2.5 2.5v5.5H15V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h7.5v1.5H4A2.5 2.5 0 0 1 1.5 17V4A2.5 2.5 0 0 1 4 1.5Z"/>
+  <rect x="5" y="5" width="8" height="2.25" rx=".5"/>
+  <rect x="5" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="13" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="5" y="13.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="13.5" width="2" height="2" rx=".45"/>
+  <path fill-rule="evenodd" d="M18 10 24 21H12Zm0 3.2L14.7 19.5h6.6Z"/>
+  <rect x="17.35" y="14.4" width="1.3" height="2.65" rx=".55"/>
+  <circle cx="18" cy="18.25" r=".75"/>
+  <g opacity=".6">
+    <rect x="1.5" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="5.25" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="9" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="12.75" y="22" width="1.75" height="1.5" rx=".5"/>
+  </g>
+</svg>

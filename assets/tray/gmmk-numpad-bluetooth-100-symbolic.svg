@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#2e3436">
+  <title>OpenGMMK Numpad Editor</title>
+  <desc>Bluetooth connected; battery 100%. No charging state is implied.</desc>
+  <path d="M4 1.5h10a2.5 2.5 0 0 1 2.5 2.5v5.5H15V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h7.5v1.5H4A2.5 2.5 0 0 1 1.5 17V4A2.5 2.5 0 0 1 4 1.5Z"/>
+  <rect x="5" y="5" width="8" height="2.25" rx=".5"/>
+  <rect x="5" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="13" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="5" y="13.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="13.5" width="2" height="2" rx=".45"/>
+  <polygon points="18.050,10.500 18.050,21.000 16.550,21.000 16.550,10.500"/><circle cx="17.3" cy="10.5" r="0.75"/><circle cx="17.3" cy="21" r="0.75"/>
+  <polygon points="17.784,9.927 21.684,13.227 20.716,14.373 16.816,11.073"/><circle cx="17.3" cy="10.5" r="0.75"/><circle cx="21.2" cy="13.8" r="0.75"/>
+  <polygon points="21.653,14.398 14.653,19.698 13.747,18.502 20.747,13.202"/><circle cx="21.2" cy="13.8" r="0.75"/><circle cx="14.2" cy="19.1" r="0.75"/>
+  <polygon points="14.658,11.806 21.658,17.206 20.742,18.394 13.742,12.994"/><circle cx="14.2" cy="12.4" r="0.75"/><circle cx="21.2" cy="17.8" r="0.75"/>
+  <polygon points="21.676,18.380 17.776,21.580 16.824,20.420 20.724,17.220"/><circle cx="21.2" cy="17.8" r="0.75"/><circle cx="17.3" cy="21" r="0.75"/>
+  <rect x="1.5" y="21.5" width="13" height="2" rx="1" opacity=".28"/>
+  <clipPath id="battery-track"><rect x="1.5" y="21.5" width="13" height="2" rx="1"/></clipPath>
+  <rect x="1.5" y="21.5" width="13" height="2" clip-path="url(#battery-track)"/>
+</svg>

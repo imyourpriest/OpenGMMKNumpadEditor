@@ -19,7 +19,7 @@ from gi.repository import GLib
 
 APP_ID = "io.github.opengmmk.NumpadEditor"
 APP_NAME = "OpenGMMK Numpad Editor"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.1"
 PROJECT_URL = "https://github.com/imyourpriest/OpenGMMKNumpadEditor"
 # Establish the process identity before importing GTK, which initializes GDK.
 # GNOME matches Wayland windows by the application ID and X11 windows by WM_CLASS.
@@ -664,7 +664,6 @@ class Application(Gtk.Application):
             self.monitor = MonitorCoordinator()
             self.indicator = StatusNotifier(
                 self.open_editor, lambda: self.refresh_monitor(force=True), self.request_quit,
-                icon_name=APP_ID, icon_theme_path=str(Path(__file__).resolve().parent / "assets"),
                 on_registration_changed=self.tray_changed)
             self.indicator.start()
             self.monitor_timer = GLib.timeout_add_seconds(5, self.monitor_tick)

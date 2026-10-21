@@ -53,6 +53,16 @@ After the 0.2.0 desktop installation was launched, an independent D-Bus query ag
 
 The monitoring implementation is intended to keep connection discovery to approximately five-second intervals, USB status queries to 30-second intervals, and failed-refresh battery cache lifetime to 120 seconds. It uses the existing configuration-interface lock, does not infer charging from the undocumented USB field, and reads Bluetooth information only through OS APIs. Consult the current automated test output for the validated failure and cache cases.
 
+## Compact indicator: 2026-10-20
+
+Version 0.2.1 replaces the top-bar text with a symbolic numpad, an integrated USB/Bluetooth badge, and a battery bar. Exact connection and battery details remain in the menu, tooltip, and accessible description. The bar uses 5% steps, with a visible sliver for a nonzero reading below 5%; only a measured 100% fills it completely. Unavailable or stale readings use a dashed bar, distinct from a measured 0%.
+
+The source validation passed all **191 headless tests**, including battery boundaries, stale/invalid/disconnected states, icon-change notifications, retained exact menu percentages, and accessibility updates. The graphical construction smoke test also passed. All 47 generated SVG assets passed their reproducibility check and loaded through GTK's symbolic icon lookup at 22 pixels using both light and dark foregrounds. A contact sheet was visually checked at normal and enlarged sizes.
+
+After installation, the previous app exited through its normal menu Quit callback and the installed 0.2.1 application was relaunched. Independent session-bus readback found its registered icon `gmmk-numpad-usb-100-symbolic` in the bundled tray directory, empty label/label guide/overlay, and exact **USB connected / Battery: 100%** tooltip text. Its accessible description also retained connection and battery information. All **191 tests** passed in the installed copy, and its launch log was empty. Physical user confirmation of the compact icon's appearance remains pending.
+
+These checks validate presentation and integration support; they do not add physical Bluetooth battery or onboard persistence acceptance.
+
 ## Physical acceptance checklist
 
 Record the USB identity/revision, firmware information when available, desktop environment, target profile/layer, and exact settings used for each test.

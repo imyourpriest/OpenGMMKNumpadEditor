@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#2e3436">
+  <title>OpenGMMK Numpad Editor</title>
+  <desc>Not connected; battery unavailable. No charging state is implied.</desc>
+  <path d="M4 1.5h10a2.5 2.5 0 0 1 2.5 2.5v5.5H15V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h7.5v1.5H4A2.5 2.5 0 0 1 1.5 17V4A2.5 2.5 0 0 1 4 1.5Z"/>
+  <rect x="5" y="5" width="8" height="2.25" rx=".5"/>
+  <rect x="5" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="13" y="9.5" width="2" height="2" rx=".45"/>
+  <rect x="5" y="13.5" width="2" height="2" rx=".45"/>
+  <rect x="9" y="13.5" width="2" height="2" rx=".45"/>
+  <polygon points="15.030,12.470 21.530,18.970 20.470,20.030 13.970,13.530"/><circle cx="14.5" cy="13" r="0.75"/><circle cx="21" cy="19.5" r="0.75"/>
+  <polygon points="21.530,13.530 15.030,20.030 13.970,18.970 20.470,12.470"/><circle cx="21" cy="13" r="0.75"/><circle cx="14.5" cy="19.5" r="0.75"/>
+  <g opacity=".6">
+    <rect x="1.5" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="5.25" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="9" y="22" width="2.5" height="1.5" rx=".5"/>
+    <rect x="12.75" y="22" width="1.75" height="1.5" rx=".5"/>
+  </g>
+</svg>
