@@ -16,9 +16,10 @@ This is an independent community project, unaffiliated with Glorious.
 - Add static colors to individual keys over the global lighting effect.
 - Keep up to 32 named local profiles in a portable JSON file; duplicate, rename, open, and save them.
 - Read battery and firmware information over USB.
+- Keep a top-bar indicator for USB/Bluetooth connection status and battery percentage while the app runs.
 - Launch from the desktop application menu with its own name and icon.
 
-**Support:** stock USB device `320f:5088`, revision `0088`, configuration interface `02`, with the exact HID descriptor documented in [PROTOCOL.md](PROTOCOL.md). Other models and revisions are deliberately rejected. Configuration over Bluetooth is not supported; the stock firmware is retained for ordinary Bluetooth operation.
+**Support:** stock USB device `320f:5088`, revision `0088`, configuration interface `02`, with the exact HID descriptor documented in [PROTOCOL.md](PROTOCOL.md). Other models and revisions are deliberately rejected for configuration. Bluetooth monitoring reads Ubuntu's existing device and battery information; configuration still requires USB.
 
 The application has been reported to work well in daily use by its initial user. The automated checks and protocol review are documented in [VALIDATION.md](VALIDATION.md). Unplug/replug persistence, use on another computer, and every combination of hardware settings have not yet been independently verified.
 
@@ -44,6 +45,8 @@ sh run.sh
 
 No PyPI dependencies are needed. The editor has been checked on Ubuntu 26.04 with GNOME; other distributions and desktops need their own testing.
 
+The top-bar icon uses the desktop's existing StatusNotifier/AppIndicator support. Ubuntu normally provides this through its Ubuntu AppIndicators extension. See [Top-bar troubleshooting](#top-bar-troubleshooting) if the icon does not appear.
+
 ### One-time USB access
 
 Connect the numpad with its USB cable. If access is unavailable, click **Set up USB access…** in the app, or run:
@@ -63,6 +66,30 @@ The setup uses Ubuntu's normal password prompt in a terminal to install a rule l
 5. Check the physical keys and lighting. To test onboard persistence, disconnect and reconnect USB, activate the same slot/layer, and check it again. Testing on another computer without remapping software provides a further check.
 
 The [Print Screen example](examples/Print-Screen.json) is a standard layout with the top-left key changed to Print Screen. Opening it only changes the local draft.
+
+### Connection and battery indicator
+
+The top-bar menu shows whether the numpad is connected over **USB**, **Bluetooth**, both, or neither, plus its battery percentage when available. Use **Open editor** to return to your draft, **Refresh status** to check again, or **Quit** to stop the app and its monitoring.
+
+Closing the editor window keeps it running in the top bar when the desktop has accepted the indicator. Your current draft stays in memory; reopen the editor to continue. Use **Save profile file…** to preserve the draft across quitting or restarting. **Quit** asks about unsaved edits. If the desktop has no indicator support, closing the window follows the normal quit flow so the app does not become inaccessible.
+
+Connection status refreshes about every five seconds. USB battery status refreshes about every 30 seconds using the same battery/firmware query as the manual button. Monitoring does not upload profiles, change RGB, or replace the separate slider helper. A failed refresh can show a previous reading as **last reading** for up to two minutes; an expired reading becomes unavailable. Switching devices or connection types clears the old reading.
+
+USB connection means USB power is present; it does **not** establish that the battery is charging. The stock USB status field for charging is not documented, so the app does not guess its meaning. Bluetooth battery data comes from BlueZ's standard battery interface or a UPower entry that identifies the same device. If Ubuntu does not provide that data, the app shows **Battery unavailable**. It never pairs, connects, or probes the numpad over Bluetooth on your behalf.
+
+The app does not start automatically at login. Launch it from the application menu when you want the indicator. Bluetooth monitoring and its battery display still need a physical test with the numpad connected over Bluetooth.
+
+### Top-bar troubleshooting
+
+First check that the editor is still running and that its window reports a connected device. On Ubuntu GNOME, open the Extensions app and check whether **Ubuntu AppIndicators** is installed and enabled. The indicator also works with desktops that provide a compatible StatusNotifier host.
+
+Only if the Ubuntu extension is missing, install it through Ubuntu's package manager:
+
+```sh
+sudo apt install gnome-shell-extension-appindicator
+```
+
+Enable the extension and log out and back in if the desktop requests it. The editor does not install or enable shell extensions itself. Without a compatible host, the editor and its in-window status remain usable.
 
 ### Local files and onboard settings
 
@@ -121,7 +148,7 @@ With GTK and a graphical session available, check UI construction with:
 sh run.sh --smoke-test
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for reporting hardware results and proposing changes, [PROTOCOL.md](PROTOCOL.md) for source evidence and packet details, and [VALIDATION.md](VALIDATION.md) for what has and has not been verified. No proprietary CORE code, installer, firmware, or database is included.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the project handoff and implementation guide, [CONTRIBUTING.md](CONTRIBUTING.md) for reporting hardware results, [PROTOCOL.md](PROTOCOL.md) for source evidence and packet details, and [VALIDATION.md](VALIDATION.md) for what has and has not been verified. No proprietary CORE code, installer, firmware, or database is included.
 
 ## License
 

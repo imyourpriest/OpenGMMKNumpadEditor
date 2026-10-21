@@ -1,6 +1,6 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stock GMMK Numpad USB protocol evidence</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1>Stock GMMK Numpad USB protocol evidence</h1>
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stock GMMK Numpad USB protocol evidence</title><style>body{font:17px/1.6 system-ui,sans-serif;max-width:940px;margin:40px auto;padding:0 24px;color:#182330;background:#fafbfc}h1,h2,h3{line-height:1.2}a{color:#0758a6}code,pre{background:#eef1f5;border-radius:5px}code{padding:.1em .3em}pre{padding:16px;overflow:auto}table{border-collapse:collapse;width:100%;font-size:15px}th,td{padding:9px;border:1px solid #cbd3df;text-align:left}img{max-width:100%;height:auto}</style><body><h1 id="stock-gmmk-numpad-usb-protocol-evidence">Stock GMMK Numpad USB protocol evidence</h1>
 <p>This is an interoperability record for the protocol subset used by OpenGMMK Numpad Editor. The packet format was independently reviewed against resources packaged in the official manufacturer's application. The initial user reports that the editor works well. Specific key/LED combinations, power-cycle persistence, and another-computer behavior still need recorded physical acceptance results; source review and successful USB transfers alone do not establish those results.</p>
-<h2>Supported device and transport</h2>
+<h2 id="supported-device-and-transport">Supported device and transport</h2>
 <table>
 <thead>
 <tr>
@@ -45,7 +45,7 @@
 </table>
 <p>Every packet below is zero-filled to 264 bytes. Byte <code>0</code> is <code>07</code>; byte <code>1</code> is the command. Profile and layer fields use values <code>1</code> through <code>3</code>. There is no checksum in the evidenced frames. Do not apply protocols for the original SONiX GMMK or for QMK/VIA firmware to this device.</p>
 <p>CORE's device discovery tries usage page/usage <code>FF02:0001</code>, then <code>FF01:0001</code>, for each supported device identity (<code>Device.js:319–357</code> and the Numpad record in <code>SupportDevice.DB</code>). The native transport uses HIDAPI feature reports (<code>GmmkNumpadSeries.js:2060–2093</code>, <code>hiddevice.cc:565–655</code>). The vendor wrapper removes the first report-ID byte from returned data; this application's raw transport retains it. All response offsets in this document include the report ID.</p>
-<h2>Evidence provenance</h2>
+<h2 id="evidence-provenance">Evidence provenance</h2>
 <p>The <a href="https://www.gloriousgaming.com/pages/legacy-software">official legacy software page</a> links <a href="https://downloads.gloriousgamingservices.com/download/GloriousCore.zip">GloriousCore.zip</a>. On 2026-10-14 it contained <code>GloriousCore_Setup_1.1.36.exe</code>. The archive and application resources were extracted statically; the installer and application were not executed.</p>
 <table>
 <thead>
@@ -104,7 +104,7 @@
 <li><code>src/renderer-process/components/KeyboardNumpadComponent/keyboard-numpad.component.html</code></li>
 </ul>
 <p>The hashes and internal archive paths identify the evidence used during review. No extracted manufacturer source, installer, application archive, firmware, or database is included in this project. The application has no runtime dependency on CORE.</p>
-<h2>Status query: <code>8A</code></h2>
+<h2 id="status-query-8a">Status query: <code>8A</code></h2>
 <p><code>GmmkNumpadSeries.js:2325–2378</code> builds <code>07 8A</code>, sends the 264-byte feature report, waits 30 ms, reads feature report <code>07</code> with length 264, then waits another 30 ms.</p>
 <table>
 <thead>
@@ -137,7 +137,17 @@
 </tbody>
 </table>
 <p>CORE interprets the firmware word's hexadecimal digits as a padded version string. This application can retain the raw word without assuming every firmware version is valid BCD. No keymap, RGB, profile, or current-setting readback command was found in the Numpad implementation.</p>
-<h2>Whole-layer key assignments: <code>03</code></h2>
+<p>The response's byte <code>1</code> is retained for diagnostics, rather than treated as a required <code>8A</code> echo: no such validation was found in the reviewed manufacturer code. The unknown charging byte is retained as raw information by the manual status action. Automatic monitoring does not translate it into a charging state.</p>
+<h3 id="automatic-usb-monitoring">Automatic USB monitoring</h3>
+<p>The monitor reuses this exact status operation, rather than adding commands. A nonblocking exclusive lock on the configuration interface covers the status request, delays, and response; the same lock protects configuration writes. If another editor operation owns the device, monitoring yields and keeps its bounded cache instead of interleaving packets or retrying configuration.</p>
+<p>Connection discovery runs about every five seconds; USB battery queries are limited to about one every 30 seconds. The last successful battery reading can be retained for at most 120 seconds when refresh fails and is marked stale. Changing the selected physical device or transport clears the old reading. Monitoring is read-only at the device-setting level: its one USB feature SET is the manufacturer's status request and contains no configuration payload.</p>
+<h2 id="bluetooth-and-desktop-battery-monitoring">Bluetooth and desktop battery monitoring</h2>
+<p>Bluetooth monitoring uses the operating system's public D-Bus APIs, with no vendor reports, GATT reads, pairing, connection changes, property writes, or service auto-start. The manufacturer device database identifies the stock Bluetooth identity as <code>093a:2860</code>; a read-only check on 2026-10-20 also found the paired numpad with Modalias <code>usb:v093Ap2860d0001</code>. It was disconnected because USB was in use. Its advertised service list included the standard Battery Service <code>180F</code> and HID Service <code>1812</code>; this is evidence of advertised services, not a completed Bluetooth battery test.</p>
+<p>The <a href="https://bluez.readthedocs.io/en/latest/device-api/">BlueZ Device API</a> supplies the optional <code>Modalias</code>, <code>Paired</code>, and <code>Connected</code> properties on <code>org.bluez.Device1</code>. Battery readings require a unique connected numpad whose vendor/product identity matches the supported identity. A name-only match may describe connection availability but does not authorize a battery association. Conflicting or ambiguous identities are not resolved by guessing.</p>
+<p>The <a href="https://bluez.readthedocs.io/en/latest/battery-api/">BlueZ Battery API</a> supplies <code>org.bluez.Battery1.Percentage</code>, a read-only byte, on that same device object. It has no charging-state property. If no precise BlueZ reading is available, an optional <a href="https://upower.freedesktop.org/docs/Device.html">UPower Device API</a> fallback accepts only a battery whose <code>NativePath</code> exactly identifies the selected BlueZ device or its complete Bluetooth address. Model names and unrelated mouse, keyboard, UPS, or laptop batteries are insufficient. A UPower reading must be present, device-local, and a precise percentage; coarse battery levels are not converted into invented percentages. Only UPower's documented <code>State</code> may supply a charging state.</p>
+<p>Neither a USB cable nor an undocumented nonzero USB status byte is presented as proof of charging. Missing, stale, and ambiguous readings remain distinguishable in the user interface. Bluetooth addresses and the full device inventory are not exposed in the monitor's public status snapshot.</p>
+<p>The top-bar presentation uses StatusNotifierItem and D-BusMenu on the user session bus. This does not grant additional HID or Bluetooth privileges. It depends on a compatible desktop host, such as Ubuntu's AppIndicators extension. No background system service or login autostart entry is installed for monitoring.</p>
+<h2 id="whole-layer-key-assignments-03">Whole-layer key assignments: <code>03</code></h2>
 <p><code>GmmkNumpadSeries.js:1291–1390,1486–1607</code> and <code>GMMKLocation.js:304–339</code> establish the key table.</p>
 <p>The header is <code>07 03 &lt;slot&gt; &lt;layer&gt; 00 00 00 00</code>. Bytes <code>8–27</code> are 20 key types; bytes <code>28–47</code> are their 20 action values. The remaining bytes are zero. Type <code>01</code> is a normal keyboard usage. Supported generic modifier combinations use type <code>E0 + mask</code>, with Ctrl=<code>1</code>, Shift=<code>2</code>, Alt=<code>4</code>, Super=<code>8</code>; the action value remains the keyboard usage.</p>
 <p>The matrix indices are:</p>
@@ -214,7 +224,7 @@
 </tbody>
 </table>
 <p>The builder starts with the manufacturer's complete table and replaces the 17 editable key entries. Index <code>11</code> remains type <code>03</code>, value <code>10</code>: the manufacturer's calculator action. This overwrites a custom encoder press assignment. Rotary turning and the slider are not entries in this editable key table. Command <code>09</code>, which separately carries knob sound-control/glow state, is not sent by this application.</p>
-<h2>Global RGB: <code>02</code>, then settings <code>07</code></h2>
+<h2 id="global-rgb-02-then-settings-07">Global RGB: <code>02</code>, then settings <code>07</code></h2>
 <p>This application's lighting path is always <strong><code>02</code> → <code>07</code> → <code>06</code> → <code>01</code></strong>. The global effect and base color go through <code>02</code>; <code>06</code> sends the complete custom-color overlay, including erased entries. The official path uses the same order and sends <code>06</code> when its selected layout is present (<code>GmmkNumpadSeries.js:1079–1119,1722–1751</code>). Sending <code>02</code> alone is not an evidenced complete operation; this source does not prove whether it immediately takes effect or persists by itself.</p>
 <p>For command <code>02</code>, see lines <code>1753–1800</code>:</p>
 <table>
@@ -305,7 +315,7 @@
 </table>
 <p>Off forces brightness bytes <code>8</code> and <code>13</code> to decimal <code>10</code>, matching CORE. Unlisted bytes are zero. Each of these two reports is followed by 100 ms.</p>
 <p>The settings packet is not a brightness-only update. Its other fields must be visible, explicit choices because no known readback can preserve their current values. <code>SupportDevice.DB</code>, first record, ships all nine Numpad layers with sensitivity <code>2</code>, Num Lock indicator false, battery indicator true, Win Lock false, and USB brightness 100. Its stored Bluetooth brightness is <code>0</code>, but its absent <code>brightnessFlag</code> makes CORE use USB brightness instead (<code>GmmkNumpadSeries.js:1835–1842</code>). These are CORE defaults, not verified firmware factory or current values.</p>
-<h2>Per-key RGB: <code>06</code></h2>
+<h2 id="per-key-rgb-06">Per-key RGB: <code>06</code></h2>
 <p><code>GmmkNumpadSeries.js:1889–2058</code> builds:</p>
 <p><code>07 06 &lt;slot&gt; &lt;layer&gt; 2A 00 &lt;brightness_0_to_20&gt; 00</code></p>
 <p>Bytes <code>8–217</code> hold 42 five-byte records. A populated record at matrix position <code>j</code> is <code>[visibility, j, red, green, blue]</code>: <code>00</code> clears the custom-color entry, <code>FF</code> enables a static color, and <code>FE</code> enables breathing. Bytes <code>218–263</code> are zero. The source writes one page and waits 100 ms.</p>
@@ -392,11 +402,11 @@
 </tbody>
 </table>
 <p>CORE uses the first matching LED index. Add therefore uses position <code>10</code>; position <code>22</code> remains empty, as do the other holes. There are 31 unique physical LED groups in this 42-position matrix. Knob press (<code>Mute</code> in the source) and Slider have no matching LED index. Do not encode negative indices for them.</p>
-<h2>Selection, transaction boundaries, and persistence</h2>
+<h2 id="selection-transaction-boundaries-and-persistence">Selection, transaction boundaries, and persistence</h2>
 <p>Command <code>01</code> is <code>07 01 &lt;slot&gt; &lt;layer&gt;</code> followed by zeros and a 50 ms delay (<code>GmmkNumpadSeries.js:850–889</code>). The official UI calls it after changing a key layer or lighting.</p>
 <p><code>StartHIDWrite</code> and <code>EndHIDWrite</code> at lines <code>2115–2138</code> send start/end packets only for Bluetooth. Both are no-ops over USB. No separate USB save/commit command was found. The similarly named <code>setProfileToDevice</code> in <code>Device.js:57–63</code> only updates the application's local database.</p>
 <p>Accordingly, a completed USB transfer is not proof of physical application or durable storage. The initial user has reported good operation, but detailed persistence results have not been recorded. Acceptance requires checking the actual keys/LEDs, disconnecting and reconnecting USB, and checking the same slot/layer again. Use on another computer should be checked independently, with host remapping software disabled for any keys under test.</p>
-<h2>Golden frame examples</h2>
+<h2 id="golden-frame-examples">Golden frame examples</h2>
 <p>These are reproducible encodings, not commands to run blindly. All offsets include the report ID. Each expression below produces exactly 264 bytes; <code>zeros(N)</code> means N zero bytes.</p>
 <table>
 <thead>

@@ -64,6 +64,26 @@ The hashes and internal archive paths identify the evidence used during review. 
 
 CORE interprets the firmware word's hexadecimal digits as a padded version string. This application can retain the raw word without assuming every firmware version is valid BCD. No keymap, RGB, profile, or current-setting readback command was found in the Numpad implementation.
 
+The response's byte `1` is retained for diagnostics, rather than treated as a required `8A` echo: no such validation was found in the reviewed manufacturer code. The unknown charging byte is retained as raw information by the manual status action. Automatic monitoring does not translate it into a charging state.
+
+### Automatic USB monitoring
+
+The monitor reuses this exact status operation, rather than adding commands. A nonblocking exclusive lock on the configuration interface covers the status request, delays, and response; the same lock protects configuration writes. If another editor operation owns the device, monitoring yields and keeps its bounded cache instead of interleaving packets or retrying configuration.
+
+Connection discovery runs about every five seconds; USB battery queries are limited to about one every 30 seconds. The last successful battery reading can be retained for at most 120 seconds when refresh fails and is marked stale. Changing the selected physical device or transport clears the old reading. Monitoring is read-only at the device-setting level: its one USB feature SET is the manufacturer's status request and contains no configuration payload.
+
+## Bluetooth and desktop battery monitoring
+
+Bluetooth monitoring uses the operating system's public D-Bus APIs, with no vendor reports, GATT reads, pairing, connection changes, property writes, or service auto-start. The manufacturer device database identifies the stock Bluetooth identity as `093a:2860`; a read-only check on 2026-10-20 also found the paired numpad with Modalias `usb:v093Ap2860d0001`. It was disconnected because USB was in use. Its advertised service list included the standard Battery Service `180F` and HID Service `1812`; this is evidence of advertised services, not a completed Bluetooth battery test.
+
+The [BlueZ Device API](https://bluez.readthedocs.io/en/latest/device-api/) supplies the optional `Modalias`, `Paired`, and `Connected` properties on `org.bluez.Device1`. Battery readings require a unique connected numpad whose vendor/product identity matches the supported identity. A name-only match may describe connection availability but does not authorize a battery association. Conflicting or ambiguous identities are not resolved by guessing.
+
+The [BlueZ Battery API](https://bluez.readthedocs.io/en/latest/battery-api/) supplies `org.bluez.Battery1.Percentage`, a read-only byte, on that same device object. It has no charging-state property. If no precise BlueZ reading is available, an optional [UPower Device API](https://upower.freedesktop.org/docs/Device.html) fallback accepts only a battery whose `NativePath` exactly identifies the selected BlueZ device or its complete Bluetooth address. Model names and unrelated mouse, keyboard, UPS, or laptop batteries are insufficient. A UPower reading must be present, device-local, and a precise percentage; coarse battery levels are not converted into invented percentages. Only UPower's documented `State` may supply a charging state.
+
+Neither a USB cable nor an undocumented nonzero USB status byte is presented as proof of charging. Missing, stale, and ambiguous readings remain distinguishable in the user interface. Bluetooth addresses and the full device inventory are not exposed in the monitor's public status snapshot.
+
+The top-bar presentation uses StatusNotifierItem and D-BusMenu on the user session bus. This does not grant additional HID or Bluetooth privileges. It depends on a compatible desktop host, such as Ubuntu's AppIndicators extension. No background system service or login autostart entry is installed for monitoring.
+
 ## Whole-layer key assignments: `03`
 
 `GmmkNumpadSeries.js:1291–1390,1486–1607` and `GMMKLocation.js:304–339` establish the key table.

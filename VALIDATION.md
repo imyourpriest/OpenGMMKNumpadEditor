@@ -28,6 +28,8 @@ The suite uses simulated devices and temporary installation folders. It covers:
 - Exact protocol examples, key and LED indices, modifier encoding, reserved bytes, and whole-layer/overlay replacement.
 - Device identity changes, incomplete transfers, concurrent access, and operation sequencing.
 - Installation/removal behavior, including preservation of added or modified files.
+- Monitor rate limits, cache expiry, connection changes, and exact Bluetooth/UPower battery association.
+- Indicator labels, D-Bus menu behavior, and missing or stale battery readings.
 
 These tests do not send HID reports to real hardware. Continuous integration runs this suite on Linux. A separate GTK construction check requires the desktop dependencies and a graphical session:
 
@@ -35,13 +37,35 @@ These tests do not send HID reports to real hardware. Continuous integration run
 sh run.sh --smoke-test
 ```
 
-Passing software checks does not establish that firmware accepted a setting or retained it in onboard storage. Current test counts and results should come from the test run or CI, rather than a fixed count in this document.
+The 0.2.0 validation run on 2026-10-20 passed all **182 tests**. This is a dated result; use a fresh test run or CI for the current count. Passing software checks does not establish that firmware accepted a setting or retained it in onboard storage.
+
+## Connection and battery monitoring: 2026-10-20
+
+One live USB status query returned battery **100%** and firmware word/version **`0088`** from the supported stock numpad. This confirms the status path returned a plausible live reading on this device; it does not establish battery accuracy, charging semantics, or continuous monitoring behavior.
+
+A separate read-only operating-system check found the already paired Bluetooth numpad with Modalias `usb:v093Ap2860d0001`, disconnected while USB was in use. It advertised Battery Service `180F` and HID Service `1812`. No `org.bluez.Battery1` instance or UPower battery for the numpad was available in that state. Other UPower devices were not used as substitutes.
+
+An isolated instance of the integrated application, using a validation application ID, registered with the actual GNOME `org.kde.StatusNotifierWatcher`. An independent D-Bus query showed its `org.kde.StatusNotifierItem-<process-id>-1` entry in `RegisteredStatusNotifierItems`. Its exported indicator label was **USB 100%**, and its monitor returned battery 100% and firmware `0088`.
+
+A programmatic window-lifecycle check marked a temporary draft as unsaved, hid the editor window, and reopened it. The same editor instance and unsaved state remained. After clearing the temporary test state, the application quit cleanly. These checks establish integration and retained draft state; a physical check of the unsaved-quit dialog remains pending.
+
+After the 0.2.0 desktop installation was launched, an independent D-Bus query again read **USB 100%** from the running application's `XAyatanaLabel`. The user then confirmed that the actual top-bar icon, USB 100% display, and **Open editor**, **Refresh status**, and **Quit** menu actions worked. Bluetooth battery delivery still requires a physical connected-device test.
+
+The monitoring implementation is intended to keep connection discovery to approximately five-second intervals, USB status queries to 30-second intervals, and failed-refresh battery cache lifetime to 120 seconds. It uses the existing configuration-interface lock, does not infer charging from the undocumented USB field, and reads Bluetooth information only through OS APIs. Consult the current automated test output for the validated failure and cache cases.
 
 ## Physical acceptance checklist
 
 Record the USB identity/revision, firmware information when available, desktop environment, target profile/layer, and exact settings used for each test.
 
-- [ ] Read battery and firmware status over USB.
+- [x] Read battery and firmware status over USB once: 100%, firmware `0088`, on 2026-10-20.
+- [x] Register the integrated indicator with GNOME's actual host and independently read its USB 100% label over D-Bus.
+- [x] Programmatically hide/reopen the same editor with an unsaved draft retained, then quit cleanly after clearing test edits.
+- [x] User confirmed the visible top-bar icon, USB 100% display, and Open editor / Refresh status / Quit actions on 2026-10-20.
+- [ ] Close the editor window; reopen the same unsaved draft from the indicator; confirm Quit handles unsaved edits.
+- [ ] Disconnect/reconnect USB; confirm the indicator follows connection changes and marks/expires unavailable readings correctly.
+- [ ] Confirm a configuration write does not interleave with automatic status polling.
+- [ ] Connect the numpad over Bluetooth; confirm the correct device and an OS-provided battery percentage, or a clear unavailable state.
+- [ ] Check behavior without a StatusNotifier host; closing the editor must not leave an inaccessible running app.
 - [ ] Save a complete intended key layer; check Print Screen, ordinary keys, and modifier combinations.
 - [ ] Check knob turning, slider volume, unmute behavior, and the desktop volume popup if the separate slider helper is installed.
 - [ ] Save and check each global RGB effect, color, speed, and brightness setting.
