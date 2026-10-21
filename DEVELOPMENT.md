@@ -52,7 +52,7 @@ For changes affecting hardware, record a small live acceptance result separately
 
 ## Current monitoring scope
 
-The 0.2 monitoring work adds an optional desktop indicator while the app runs, connection discovery about every five seconds, USB battery reads about every 30 seconds, and a 120-second maximum cache after a failed refresh. No login autostart is installed. BlueZ identifies the stock Bluetooth numpad as `093a:2860`; a paired but disconnected instance was observed on 2026-10-20. It advertised the standard battery service, but Bluetooth delivery still needs a physical connected-device test.
+The 0.2 monitoring work adds an optional desktop indicator while the app runs, connection discovery about every five seconds, USB battery reads about every 30 seconds, and a 120-second maximum cache after a failed refresh. The 0.2.1 presentation uses bundled symbolic numpad icons with integrated connection badges and a battery bar; exact details remain in the menu and tooltip. No login autostart is installed. BlueZ identifies the stock Bluetooth numpad as `093a:2860`; a paired but disconnected instance was observed on 2026-10-20. It advertised the standard battery service, but Bluetooth delivery still needs a physical connected-device test.
 
 One live USB query on 2026-10-20 returned battery 100% and firmware `0088`. Treat this as one status-path observation, not battery calibration or proof of charging. [VALIDATION.md](VALIDATION.md) tracks the remaining physical checks. Keep evidence accurate as the feature changes; do not freeze an automated test count in prose.
 

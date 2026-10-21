@@ -16,7 +16,7 @@ This is an independent community project, unaffiliated with Glorious.
 - Add static colors to individual keys over the global lighting effect.
 - Keep up to 32 named local profiles in a portable JSON file; duplicate, rename, open, and save them.
 - Read battery and firmware information over USB.
-- Keep a top-bar indicator for USB/Bluetooth connection status and battery percentage while the app runs.
+- Keep a compact top-bar numpad icon with a USB/Bluetooth badge and battery bar while the app runs.
 - Launch from the desktop application menu with its own name and icon.
 
 **Support:** stock USB device `320f:5088`, revision `0088`, configuration interface `02`, with the exact HID descriptor documented in [PROTOCOL.md](PROTOCOL.md). Other models and revisions are deliberately rejected for configuration. Bluetooth monitoring reads Ubuntu's existing device and battery information; configuration still requires USB.
@@ -69,7 +69,9 @@ The [Print Screen example](examples/Print-Screen.json) is a standard layout with
 
 ### Connection and battery indicator
 
-The top-bar menu shows whether the numpad is connected over **USB**, **Bluetooth**, both, or neither, plus its battery percentage when available. Use **Open editor** to return to your draft, **Refresh status** to check again, or **Quit** to stop the app and its monitoring.
+The top bar shows a monochrome numpad with a small **USB** or **Bluetooth** symbol at the bottom right and a battery bar underneath. The bar approximates the battery in 5% steps; a full bar means 100%. A dashed bar means the current reading is unavailable or stale, while an empty continuous track means a measured 0%. Disconnected, multiple-device, and unknown connection states have distinct badges.
+
+The menu and tooltip retain the exact battery percentage and full connection details, including when both USB and Bluetooth are connected. USB takes display priority when both are present; its badge does not establish the active keyboard input route. Use **Open editor** to return to your draft, **Refresh status** to check again, or **Quit** to stop the app and its monitoring.
 
 Closing the editor window keeps it running in the top bar when the desktop has accepted the indicator. Your current draft stays in memory; reopen the editor to continue. Use **Save profile file…** to preserve the draft across quitting or restarting. **Quit** asks about unsaved edits. If the desktop has no indicator support, closing the window follows the normal quit flow so the app does not become inaccessible.
 
