@@ -67,6 +67,15 @@ class BackendTests(unittest.TestCase):
         self.assertEqual(backend.read_status()['battery'], 83)
         self.assertEqual(self.commands(), [0x8a])
 
+    def test_status_query_can_bind_to_monitors_exact_device_identity(self):
+        device = {"sysfs_usb": "/sys/devices/usb1/1-2"}
+        raw = bytearray(264)
+        raw[0] = 7; raw[2] = 83
+        self.connection.get_feature.return_value = bytes(raw)
+        self.assertEqual(backend.read_status(device=device)['battery'], 83)
+        self.transport.assert_called_once_with(device)
+        backend.connected_device.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
